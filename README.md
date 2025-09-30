@@ -1,162 +1,93 @@
-# Enterprise E-Commerce Microservices Platform
+# Online Shopping Hub
 
-A **production-ready, distributed e-commerce platform** built with **microservices architecture**, demonstrating enterprise-level backend development skills. This system showcases **fault tolerance**, **scalability**, **event-driven architecture**, and **cloud-native deployment** on AWS with Kubernetes orchestration.
+A **production-ready, full-stack e-commerce platform** built with **React** frontend and **Node.js** backend using **MVC architecture**. This system demonstrates enterprise-level development practices with proper separation of concerns, scalable database design, and comprehensive error handling.
 
-## 🏗️ **Microservices Architecture**
+## 🏗️ **Architecture Overview**
 
-This platform implements a **true microservices architecture** with:
-- **6 Independent Services** with separate databases
-- **Event-Driven Communication** via RabbitMQ
-- **Service Discovery** with Consul
-- **API Gateway** with circuit breakers and load balancing
-- **Distributed Caching** with Redis
-- **Real-time Notifications** with WebSockets
+### **Frontend (React)**
+- **Modern React 18** with Hooks and Context API
+- **Bootstrap 5** for responsive UI components
+- **React Router** for client-side routing
+- **Axios** for API communication
+- **Vite** for fast development and building
 
-## 🚀 **Microservices & Features**
+### **Backend (Node.js)**
+- **MVC Architecture** with proper separation of concerns
+- **Express.js** with comprehensive middleware
+- **PostgreSQL** with raw SQL queries for performance
+- **JWT Authentication** with role-based access control
+- **Input Validation** with express-validator
+- **Security** with Helmet, CORS, and rate limiting
 
-### **Service Architecture**
-
-#### 🔐 **Auth Service** (Port 3001)
-- JWT authentication with refresh tokens
-- Role-based access control (Customer, Admin, Vendor)
-- User registration and email verification
-- Session management with Redis
-- Password reset functionality
-
-#### 📎 **Product Service** (Port 3002)
-- Product catalog management
-- Advanced search and filtering
-- Inventory tracking and reservation
-- Redis caching for performance
-- Category management
-
-#### 📝 **Order Service** (Port 3003)
-- Order lifecycle management
-- Saga pattern for distributed transactions
-- Integration with Product and Payment services
-- Order status tracking
-- Inventory coordination
-
-#### 💳 **Payment Service** (Port 3004)
-- Stripe payment processing
-- Payment intent management
-- Webhook handling for payment events
-- Refund processing
-- PCI compliance
-
-#### 🔔 **Notification Service** (Port 3005)
-- Real-time WebSocket notifications
-- Email notifications (welcome, order updates)
-- Event-driven messaging
-- Multi-channel communication
-
-#### 🌐 **API Gateway** (Port 3000)
-- Single entry point for all services
-- Dynamic service discovery
-- Circuit breaker pattern
-- Rate limiting and security
-- Load balancing
-
-### **Enterprise Technologies**
-- **Microservices**: Independent, scalable services
-- **Event-Driven**: RabbitMQ for async communication
-- **Service Discovery**: Consul for service registration
-- **Caching**: Redis for distributed caching
-- **Monitoring**: Prometheus + Grafana
-- **Orchestration**: Kubernetes with auto-scaling
-- **Cloud**: AWS EKS, RDS, ElastiCache
-- **Infrastructure**: Terraform for IaC
-- **CI/CD**: Docker containerization
-- **Observability**: Distributed tracing with Jaeger
-
-## 🏗️ **Distributed System Architecture**
+## 📁 **Project Structure**
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Load Balancer │────│   API Gateway   │────│  Service Mesh   │
-│   (AWS ALB)     │    │  (Port 3000)    │    │   (Consul)      │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │
-                ┌───────────────┼───────────────┐
-                │               │               │
-        ┌───────▼──────┐ ┌──────▼──────┐ ┌─────▼──────┐
-        │ Auth Service │ │Product Svc  │ │Order Svc   │
-        │ (Port 3001)  │ │(Port 3002)  │ │(Port 3003) │
-        └──────────────┘ └─────────────┘ └────────────┘
-                │               │               │
-        ┌───────▼──────┐ ┌──────▼──────┐ ┌─────▼──────┐
-        │Payment Svc   │ │Notification │ │   Events   │
-        │(Port 3004)   │ │(Port 3005)  │ │ (RabbitMQ) │
-        └──────────────┘ └─────────────┘ └────────────┘
-                │               │               │
-        ┌───────▼──────┐ ┌──────▼──────┐ ┌─────▼──────┐
-        │ PostgreSQL   │ │    Redis    │ │Monitoring  │
-        │   (RDS)      │ │(ElastiCache)│ │(Prometheus)│
-        └──────────────┘ └─────────────┘ └────────────┘
+online-shopping-hub/
+├── frontend/                 # React frontend application
+│   ├── src/
+│   │   ├── components/      # Reusable UI components
+│   │   ├── pages/          # Page components
+│   │   ├── contexts/       # React Context providers
+│   │   └── services/       # API service functions
+│   └── package.json
+├── backend/                 # Node.js backend API
+│   ├── controllers/        # Business logic controllers
+│   ├── models/            # Database models
+│   ├── routes/            # API route definitions
+│   ├── middleware/        # Custom middleware
+│   ├── config/           # Configuration files
+│   └── server.js         # Application entry point
+├── scripts/              # Utility scripts
+└── docker-compose.yml   # Docker services
 ```
 
-### **Service Communication**
-- **Synchronous**: HTTP/REST via API Gateway
-- **Asynchronous**: Event-driven via RabbitMQ
-- **Service Discovery**: Consul for dynamic routing
-- **Circuit Breakers**: Fault tolerance patterns
-- **Caching**: Redis for distributed caching
-
-## 🚀 **Production AWS Deployment**
+## 🚀 **Quick Start**
 
 ### **Prerequisites**
+- Node.js 16+ and npm
+- PostgreSQL 12+
+- Docker (optional)
+
+### **Installation**
+
+1. **Clone the repository**
 ```bash
-# Install required tools
-brew install awscli terraform kubectl docker
-
-# Configure AWS credentials
-aws configure
-
-# Verify prerequisites
-./scripts/deploy-aws.sh prereq
+git clone https://github.com/dhvanil23/Online-Shopping-Hub.git
+cd Online-Shopping-Hub
 ```
 
-### **Complete AWS Deployment**
+2. **Install all dependencies**
 ```bash
-# Deploy entire platform to AWS
-./scripts/deploy-aws.sh all
-
-# This will:
-# 1. Create VPC, EKS, RDS Aurora, ElastiCache
-# 2. Build and push Docker images to ECR
-# 3. Deploy microservices to EKS
-# 4. Configure monitoring and logging
+npm run install:all
 ```
 
-### **Step-by-Step Deployment**
+3. **Setup database**
 ```bash
-# 1. Deploy AWS infrastructure
-./scripts/deploy-aws.sh infra
+# Using Docker (recommended)
+docker-compose up -d postgres
 
-# 2. Build and push images
-./scripts/deploy-aws.sh images
-
-# 3. Deploy to Kubernetes
-./scripts/deploy-aws.sh k8s
+# Or install PostgreSQL locally and create database
+createdb ecommerce_db
 ```
 
-### **Complete Platform Demo**
+4. **Configure environment**
 ```bash
-# Quick start - Full platform with UI
-./scripts/start-demo.sh
-
-# Or manually:
-npm install
-npm run frontend:install
-npm run dev:full
-
-# Access:
-# Frontend: http://localhost:3001
-# API Gateway: http://localhost:3000
-# Backend Services: 3001-3005
+# Backend environment
+cp backend/.env.example backend/.env
+# Update database credentials in backend/.env
 ```
 
-### **Demo Credentials**
+5. **Start development servers**
+```bash
+npm run dev
+```
+
+This will start:
+- **Backend API**: http://localhost:3000
+- **Frontend**: http://localhost:3001
+
+## 🔑 **Demo Credentials**
+
 ```
 Customer Account:
   Email: customer@demo.com
@@ -167,191 +98,166 @@ Admin Account:
   Password: password123
 ```
 
-### **AWS Resources Created**
-- **EKS Cluster** - Kubernetes orchestration
-- **RDS Aurora PostgreSQL** - Multi-AZ database cluster
-- **ElastiCache Redis** - Distributed caching
-- **Application Load Balancer** - Traffic distribution
-- **ECR Repositories** - Container image storage
-- **VPC with 3 AZs** - Network isolation
-- **CloudWatch** - Monitoring and logging
-- **IAM Roles** - Security and permissions
+## 📊 **Features**
 
-## 📚 API Documentation
+### **Customer Features**
+- ✅ **User Registration & Authentication**
+- ✅ **Product Browsing** with search, filter, and sort
+- ✅ **Shopping Cart** with local storage persistence
+- ✅ **Order Management** - place and track orders
+- ✅ **User Profile** management
+- ✅ **Responsive Design** for all devices
 
-Once the server is running, visit:
-- **API Documentation**: http://localhost:3000/api-docs
-- **Health Check**: http://localhost:3000/health
+### **Admin Features**
+- ✅ **Product Management** - CRUD operations
+- ✅ **Order Management** - view and update order status
+- ✅ **User Management** - view customer accounts
+- ✅ **Dashboard** with sales statistics
 
-### Key Endpoints
+### **Technical Features**
+- ✅ **MVC Architecture** for maintainable code
+- ✅ **Role-based Access Control** (Customer/Admin)
+- ✅ **Input Validation** and sanitization
+- ✅ **Error Handling** with proper HTTP status codes
+- ✅ **Security** - Helmet, CORS, rate limiting
+- ✅ **Database Optimization** with connection pooling
+- ✅ **API Documentation** with inline comments
 
-#### Authentication
+## 🛠️ **Development**
+
+### **Backend Development**
+```bash
+cd backend
+npm run dev          # Start with nodemon
+npm test            # Run tests
+npm run test:watch  # Run tests in watch mode
+```
+
+### **Frontend Development**
+```bash
+cd frontend
+npm run dev         # Start Vite dev server
+npm run build       # Build for production
+npm run preview     # Preview production build
+```
+
+### **Database Management**
+```bash
+# Setup database and seed data
+npm run setup
+
+# Connect to database
+docker exec -it postgres psql -U postgres -d ecommerce_db
+```
+
+## 🔧 **API Endpoints**
+
+### **Authentication**
 - `POST /api/v1/auth/register` - User registration
 - `POST /api/v1/auth/login` - User login
-- `POST /api/v1/auth/refresh-token` - Refresh JWT token
 - `GET /api/v1/auth/profile` - Get user profile
+- `POST /api/v1/auth/logout` - User logout
 
-#### Products
-- `GET /api/v1/products` - List products with filtering
-- `GET /api/v1/products/:id` - Get product details
-- `POST /api/v1/products` - Create product (Admin/Vendor)
-- `PUT /api/v1/products/:id` - Update product
-- `DELETE /api/v1/products/:id` - Delete product
+### **Products**
+- `GET /api/v1/products` - Get products with filtering/sorting
+- `GET /api/v1/products/:id` - Get single product
+- `POST /api/v1/products` - Create product (Admin)
+- `PUT /api/v1/products/:id` - Update product (Admin)
+- `DELETE /api/v1/products/:id` - Delete product (Admin)
 
-#### Orders
+### **Orders**
 - `POST /api/v1/orders` - Create order
 - `GET /api/v1/orders` - Get user orders
-- `GET /api/v1/orders/:id` - Get order details
+- `GET /api/v1/orders/:id` - Get single order
 - `PUT /api/v1/orders/:id/status` - Update order status (Admin)
+- `POST /api/v1/orders/:id/cancel` - Cancel order
 
-## 🧪 Testing
+## 🚀 **Production Deployment**
 
+### **Environment Variables**
 ```bash
-# Run all tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run tests in watch mode
-npm run test:watch
+# Backend (.env)
+NODE_ENV=production
+PORT=3000
+DB_HOST=your-db-host
+DB_NAME=your-db-name
+DB_USER=your-db-user
+DB_PASSWORD=your-db-password
+JWT_SECRET=your-super-secure-jwt-secret
 ```
 
-## 🔒 Security Features
+### **Docker Deployment**
+```bash
+# Build and run with Docker Compose
+docker-compose up --build -d
 
-- **JWT Authentication** with refresh tokens
+# Or build individual services
+docker build -t shopping-hub-backend ./backend
+docker build -t shopping-hub-frontend ./frontend
+```
+
+### **AWS Deployment**
+- **Backend**: Deploy to AWS ECS or Elastic Beanstalk
+- **Frontend**: Deploy to AWS S3 + CloudFront
+- **Database**: Use AWS RDS PostgreSQL
+- **File Storage**: AWS S3 for product images
+
+## 🧪 **Testing**
+
+```bash
+# Backend tests
+cd backend
+npm test                    # Run all tests
+npm run test:coverage      # Run with coverage report
+
+# Frontend tests (if implemented)
+cd frontend
+npm test
+```
+
+## 📈 **Performance Optimizations**
+
+- **Database Connection Pooling** for efficient resource usage
+- **Query Optimization** with proper indexing
+- **Compression Middleware** for reduced response sizes
 - **Rate Limiting** to prevent abuse
-- **Input Validation** using Joi and express-validator
-- **SQL Injection Protection** via Sequelize ORM
+- **Frontend Code Splitting** with React.lazy
+- **Image Optimization** with proper sizing and formats
+
+## 🔒 **Security Features**
+
+- **JWT Authentication** with secure token handling
+- **Password Hashing** with bcrypt
+- **Input Validation** and sanitization
+- **SQL Injection Prevention** with parameterized queries
 - **XSS Protection** with Helmet middleware
 - **CORS Configuration** for cross-origin requests
-- **Password Hashing** using bcrypt
-- **Environment Variables** for sensitive data
+- **Rate Limiting** to prevent brute force attacks
 
-## 📊 Performance Optimizations
-
-- **Redis Caching** for frequently accessed data
-- **Database Indexing** for optimized queries
-- **Connection Pooling** for database connections
-- **Compression Middleware** for response optimization
-- **Pagination** for large datasets
-- **Lazy Loading** for related data
-
-## 🚀 Deployment
-
-### Production Checklist
-- [ ] Environment variables configured
-- [ ] Database migrations run
-- [ ] SSL certificates installed
-- [ ] Monitoring setup (logs, metrics)
-- [ ] Backup strategy implemented
-- [ ] Load balancer configured
-
-### Docker Production Deployment
-```bash
-# Build production image
-docker build -t ecommerce-backend:prod .
-
-# Run with production environment
-docker run -d \
-  --name ecommerce-backend \
-  -p 3000:3000 \
-  --env-file .env.production \
-  ecommerce-backend:prod
-```
-
-## 📈 Monitoring & Logging
-
-- **Winston Logger** for structured logging
-- **Health Check Endpoint** for monitoring
-- **Error Tracking** with detailed error logs
-- **Performance Metrics** via middleware
-- **Database Query Logging** in development
-
-## 🔧 Development Tools
-
-- **Nodemon** for auto-restart during development
-- **ESLint** for code linting
-- **Prettier** for code formatting
-- **Jest** for testing
-- **Swagger** for API documentation
-- **Sequelize CLI** for database operations
-
-## 📝 Environment Variables
-
-Key environment variables (see `.env.example`):
-
-```env
-NODE_ENV=development
-PORT=3000
-DB_HOST=localhost
-DB_NAME=ecommerce_db
-REDIS_HOST=localhost
-JWT_SECRET=your-secret-key
-STRIPE_SECRET_KEY=your-stripe-key
-```
-
-## 🤝 Contributing
+## 🤝 **Contributing**
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Run tests and linting
-6. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📄 License
+## 📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🎯 **Enterprise Features Demonstrated**
+## 🎯 **Why This Architecture?**
 
-### **Microservices Patterns**
-- ✅ **API Gateway Pattern** - Single entry point with routing
-- ✅ **Service Discovery** - Dynamic service registration with Consul
-- ✅ **Circuit Breaker** - Fault tolerance and resilience
-- ✅ **Saga Pattern** - Distributed transaction management
-- ✅ **Event Sourcing** - Event-driven architecture with RabbitMQ
-- ✅ **CQRS** - Command Query Responsibility Segregation
+### **MVC Benefits**
+- **Separation of Concerns** - Models, Views, Controllers have distinct responsibilities
+- **Maintainability** - Easy to modify and extend individual components
+- **Testability** - Each layer can be tested independently
+- **Scalability** - Clear structure supports team development
 
-### **Scalability & Performance**
-- ✅ **Horizontal Scaling** - Kubernetes auto-scaling
-- ✅ **Load Balancing** - AWS ALB with health checks
-- ✅ **Caching Strategy** - Redis distributed caching
-- ✅ **Database Optimization** - Connection pooling, indexing
-- ✅ **CDN Integration** - Cloudinary for static assets
+### **Technology Choices**
+- **PostgreSQL** - ACID compliance, complex queries, JSON support
+- **Raw SQL** - Maximum performance, no ORM overhead
+- **React** - Component-based UI, excellent ecosystem
+- **Express.js** - Minimal, flexible, battle-tested
 
-### **DevOps & Infrastructure**
-- ✅ **Infrastructure as Code** - Terraform for AWS resources
-- ✅ **Container Orchestration** - Kubernetes with Helm charts
-- ✅ **CI/CD Pipeline** - Docker multi-stage builds
-- ✅ **Monitoring & Alerting** - Prometheus + Grafana
-- ✅ **Distributed Tracing** - Jaeger for request tracking
-- ✅ **Centralized Logging** - ELK stack integration
-
-### **Security & Compliance**
-- ✅ **Zero Trust Architecture** - Service-to-service authentication
-- ✅ **OAuth 2.0 / JWT** - Stateless authentication
-- ✅ **Rate Limiting** - DDoS protection
-- ✅ **Input Validation** - SQL injection prevention
-- ✅ **Secrets Management** - Kubernetes secrets
-- ✅ **PCI Compliance** - Secure payment processing
-
-### **Data Management**
-- ✅ **Database per Service** - Data isolation
-- ✅ **Event-Driven Updates** - Eventual consistency
-- ✅ **Backup & Recovery** - Automated RDS backups
-- ✅ **Data Encryption** - At rest and in transit
-
-## 💼 **Resume Impact**
-
-This project showcases **senior-level backend engineering** skills:
-
-• **Distributed Systems Design** - Microservices with proper boundaries
-• **Cloud Architecture** - AWS-native with managed services
-• **Event-Driven Architecture** - Async communication patterns
-• **Production Readiness** - Monitoring, logging, alerting
-• **Scalability Engineering** - Auto-scaling, load balancing
-• **DevOps Integration** - IaC, containerization, orchestration
-
-Perfect for **Staff Engineer**, **Principal Engineer**, or **Solutions Architect** roles!
+This architecture is **production-ready** and suitable for **enterprise applications** with thousands of users and products.

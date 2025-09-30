@@ -4,39 +4,29 @@ echo "🚀 Starting E-Commerce Production Environment"
 echo "============================================"
 
 # Kill existing processes
-pkill -f "node.*services" 2>/dev/null
 pkill -f "node.*server" 2>/dev/null
 
 # Load production environment
-if [ -f .env.production ]; then
-  export $(cat .env.production | xargs)
+if [ -f backend/.env ]; then
+  export $(cat backend/.env | xargs)
   echo "✅ Loaded production configuration"
 else
-  echo "❌ .env.production not found"
-  echo "Please create .env.production with your AWS RDS/ElastiCache credentials"
+  echo "❌ backend/.env not found"
+  echo "Please create backend/.env with your production credentials"
   exit 1
 fi
 
-# Start services
-echo "📦 Starting production services..."
-node services/auth-service/index.js &
-AUTH_PID=$!
-
-node services/product-service/index.js &
-PRODUCT_PID=$!
-
-sleep 5
-
-node services/api-gateway/index.js &
-GATEWAY_PID=$!
+# Start backend server
+echo "📦 Starting production server..."
+cd backend && npm run prod &
+BACKEND_PID=$!
 
 echo ""
 echo "🌐 Production Environment:"
-echo "• API Gateway: http://localhost:${API_GATEWAY_PORT:-3000}"
-echo "• Database: AWS RDS PostgreSQL"
-echo "• Cache: AWS ElastiCache Redis"
+echo "• API Server: http://localhost:${PORT:-3000}"
+echo "• Database: PostgreSQL"
 echo ""
 echo "Press Ctrl+C to stop"
 
-trap "kill $AUTH_PID $PRODUCT_PID $GATEWAY_PID 2>/dev/null; exit" INT
+trap "kill $BACKEND_PID 2>/dev/null; exit" INT
 wait
