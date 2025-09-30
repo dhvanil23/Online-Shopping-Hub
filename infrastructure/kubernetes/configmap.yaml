@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ecommerce-config
+  namespace: ecommerce
+data:
+  NODE_ENV: "production"
+  RABBITMQ_URL: "amqp://rabbitmq:5672"
+  REDIS_URL: "redis://redis:6379"
+  CONSUL_URL: "http://consul:8500"
+  LOG_LEVEL: "info"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ecommerce-secrets
+  namespace: ecommerce
+type: Opaque
+stringData:
+  JWT_SECRET: "your-production-jwt-secret"
+  STRIPE_SECRET_KEY: "sk_live_your_stripe_key"
+  STRIPE_WEBHOOK_SECRET: "whsec_your_webhook_secret"
+  SMTP_USER: "your-email@domain.com"
+  SMTP_PASS: "your-email-password"
+  DB_PASSWORD: "your-db-password"

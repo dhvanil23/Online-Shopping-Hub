@@ -1,0 +1,194 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ecommerce_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  consul:
+    image: consul:1.15
+    command: consul agent -dev -client=0.0.0.0 -ui
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    volumes:
+      - consul_data:/consul/data
+
+  # Microservices
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - CONSUL_HOST=consul
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - consul
+      - redis
+    volumes:
+      - ./services/api-gateway:/app
+      - /app/node_modules
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - AUTH_PORT=3001
+      - AUTH_DB_URL=postgres://postgres:password@postgres:5432/ecommerce_db
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - CONSUL_HOST=consul
+      - JWT_SECRET=your-secret-key
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - consul
+    volumes:
+      - ./services/auth-service:/app
+      - /app/node_modules
+
+  product-service:
+    build:
+      context: .
+      dockerfile: services/product-service/Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - PRODUCT_PORT=3002
+      - PRODUCT_DB_URL=postgres://postgres:password@postgres:5432/ecommerce_db
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - CONSUL_HOST=consul
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - consul
+    volumes:
+      - ./services/product-service:/app
+      - /app/node_modules
+
+  order-service:
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - ORDER_PORT=3003
+      - ORDER_DB_URL=postgres://postgres:password@postgres:5432/ecommerce_db
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - CONSUL_HOST=consul
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - consul
+    volumes:
+      - ./services/order-service:/app
+      - /app/node_modules
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=development
+      - PAYMENT_PORT=3004
+      - PAYMENT_DB_URL=postgres://postgres:password@postgres:5432/ecommerce_db
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - CONSUL_HOST=consul
+      - STRIPE_SECRET_KEY=sk_test_your_stripe_key
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - consul
+    volumes:
+      - ./services/payment-service:/app
+      - /app/node_modules
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=development
+      - NOTIFICATION_PORT=3005
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://admin:password@rabbitmq:5672
+      - CONSUL_HOST=consul
+      - EMAIL_HOST=smtp.gmail.com
+      - EMAIL_USER=your-email@gmail.com
+      - EMAIL_PASS=your-app-password
+    depends_on:
+      - redis
+      - rabbitmq
+      - consul
+    volumes:
+      - ./services/notification-service:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  consul_data:
