@@ -1,19 +1,9 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
-const { validationResult } = require('express-validator');
 
 class OrderController {
   static async createOrder(req, res) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Validation failed', 
-          details: errors.array() 
-        });
-      }
-
       const { items, totalAmount, shippingAddress } = req.body;
       const userId = req.user.id;
 
@@ -35,7 +25,6 @@ class OrderController {
         }
       }
 
-      // Create order
       const order = await Order.create({
         userId,
         items,
@@ -43,7 +32,6 @@ class OrderController {
         shippingAddress
       });
 
-      // Update inventory for each item
       for (const item of items) {
         await Product.updateInventory(item.id, item.quantity);
       }
@@ -120,16 +108,6 @@ class OrderController {
 
   static async updateOrderStatus(req, res) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Validation failed', 
-          details: errors.array() 
-        });
-      }
-
-      // Check admin role
       if (req.user.role !== 'admin') {
         return res.status(403).json({ 
           success: false, 
@@ -165,7 +143,6 @@ class OrderController {
 
   static async getOrderStats(req, res) {
     try {
-      // Check admin role
       if (req.user.role !== 'admin') {
         return res.status(403).json({ 
           success: false, 
@@ -194,7 +171,6 @@ class OrderController {
       const { id } = req.params;
       const userId = req.user.role === 'admin' ? null : req.user.id;
 
-      // Find order
       const order = await Order.findById(id, userId);
       if (!order) {
         return res.status(404).json({ 
@@ -203,7 +179,6 @@ class OrderController {
         });
       }
 
-      // Check if order can be cancelled
       if (order.status !== 'pending' && order.status !== 'confirmed') {
         return res.status(400).json({ 
           success: false, 
@@ -211,10 +186,8 @@ class OrderController {
         });
       }
 
-      // Update order status
       const updatedOrder = await Order.updateStatus(id, 'cancelled');
 
-      // Restore inventory
       const items = JSON.parse(order.items);
       for (const item of items) {
         await Product.updateInventory(item.id, -item.quantity); // Negative to add back

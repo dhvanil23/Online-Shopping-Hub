@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Form, Pagination, Alert, InputGroup } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { productsAPI, cartAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 
 const ProductsPage = () => {
@@ -13,6 +14,8 @@ const ProductsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProducts();
@@ -43,6 +46,11 @@ const ProductsPage = () => {
   };
 
   const addToCart = (product) => {
+    if (!isAuthenticated) {
+      toast.info('Please login to add items to cart');
+      navigate('/login');
+      return;
+    }
     try {
       cartAPI.addToCart(product);
       toast.success(`${product.name} added to cart!`);

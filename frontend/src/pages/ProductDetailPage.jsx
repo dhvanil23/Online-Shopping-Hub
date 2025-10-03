@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Badge, Spinner, Alert } from 'react-bootstrap';
 import { productsAPI, cartAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 
 const ProductDetailPage = () => {
@@ -10,6 +11,7 @@ const ProductDetailPage = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     fetchProduct();
@@ -29,6 +31,11 @@ const ProductDetailPage = () => {
   };
 
   const addToCart = () => {
+    if (!isAuthenticated) {
+      toast.info('Please login to add items to cart');
+      navigate('/login');
+      return;
+    }
     try {
       cartAPI.addToCart(product);
       toast.success(`${product.name} added to cart!`);

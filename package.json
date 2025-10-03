@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Full-stack E-Commerce Platform with React frontend and Node.js backend",
   "scripts": {
-    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "dev": "docker-compose up -d postgres && concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
     "backend:dev": "cd backend && npm run dev",
     "frontend:dev": "cd frontend && npm run dev",
     "backend:start": "cd backend && npm start",

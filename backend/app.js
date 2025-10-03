@@ -5,12 +5,10 @@ const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 const morgan = require('morgan');
 
-// Import routes
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
 
-// Import database
 const db = require('./config/database');
 
 const app = express();
@@ -38,8 +36,8 @@ app.use(cors({
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'production' ? 100 : 1000,
   message: {
     success: false,
     error: 'Too many requests from this IP, please try again later.'
@@ -53,15 +51,15 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Compression middleware
+// Response compression middleware
 app.use(compression());
 
-// Logging middleware
+// HTTP request logging
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('combined'));
 }
 
-// Health check endpoint
+// Health check
 app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
@@ -72,12 +70,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/orders', orderRoutes);
 
-// 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
@@ -86,11 +82,9 @@ app.use('*', (req, res) => {
   });
 });
 
-// Global error handler
 app.use((error, req, res, next) => {
   console.error('Global error handler:', error);
 
-  // Database connection errors
   if (error.code === 'ECONNREFUSED') {
     return res.status(503).json({
       success: false,
@@ -98,7 +92,6 @@ app.use((error, req, res, next) => {
     });
   }
 
-  // JWT errors
   if (error.name === 'JsonWebTokenError') {
     return res.status(401).json({
       success: false,
@@ -113,7 +106,6 @@ app.use((error, req, res, next) => {
     });
   }
 
-  // Validation errors
   if (error.name === 'ValidationError') {
     return res.status(400).json({
       success: false,
@@ -122,7 +114,6 @@ app.use((error, req, res, next) => {
     });
   }
 
-  // Default error
   res.status(error.status || 500).json({
     success: false,
     error: process.env.NODE_ENV === 'production' 
@@ -132,7 +123,6 @@ app.use((error, req, res, next) => {
   });
 });
 
-// Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
   await db.close();

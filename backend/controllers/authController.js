@@ -1,19 +1,9 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { validationResult } = require('express-validator');
 
 class AuthController {
   static async register(req, res) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Validation failed', 
-          details: errors.array() 
-        });
-      }
-
       const { email, password, name, role = 'customer' } = req.body;
 
       // Check if user already exists
@@ -25,7 +15,6 @@ class AuthController {
         });
       }
 
-      // Create user
       const user = await User.create({ email, password, name, role });
       
       // Generate JWT token
@@ -51,18 +40,8 @@ class AuthController {
 
   static async login(req, res) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Validation failed', 
-          details: errors.array() 
-        });
-      }
-
       const { email, password } = req.body;
 
-      // Find user
       const user = await User.findByEmail(email);
       if (!user) {
         return res.status(401).json({ 
@@ -71,7 +50,6 @@ class AuthController {
         });
       }
 
-      // Validate password
       const isValidPassword = await User.validatePassword(password, user.password);
       if (!isValidPassword) {
         return res.status(401).json({ 
@@ -80,7 +58,6 @@ class AuthController {
         });
       }
 
-      // Update last login
       await User.updateLastLogin(user.id);
 
       // Generate JWT token
@@ -90,7 +67,6 @@ class AuthController {
         { expiresIn: '24h' }
       );
 
-      // Remove password from response
       const { password: _, ...userWithoutPassword } = user;
 
       res.json({
@@ -135,7 +111,6 @@ class AuthController {
   }
 
   static async logout(req, res) {
-    // In a production app, you might want to blacklist the token
     res.json({ 
       success: true, 
       message: 'Logged out successfully' 
