@@ -28,7 +28,6 @@ databases:
   - name: ecommerce-db
     plan: free
     databaseName: ecommerce_db
-    user: postgres
 EOF
 
 if [ ! -d ".git" ]; then
