@@ -5,7 +5,7 @@ const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 const morgan = require('morgan');
 const session = require('express-session');
-const RedisStore = require('connect-redis').default;
+const RedisSessionStore = require('connect-redis').default;
 
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
@@ -51,7 +51,7 @@ app.use(cors({
 }));
 
 // Redis-backed rate limiting
-const RedisStore = require('rate-limit-redis');
+const RedisRateLimitStore = require('rate-limit-redis');
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'production' ? 100 : 1000,
@@ -61,7 +61,7 @@ const limiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  store: redis.isConnected() ? new RedisStore({
+  store: redis.isConnected() ? new RedisRateLimitStore({
     sendCommand: (...args) => redis.getClient().sendCommand(args),
   }) : new rateLimit.MemoryStore(),
   skip: (req) => {
@@ -73,7 +73,7 @@ app.use(limiter);
 // Redis session store
 if (redis.isConnected()) {
   app.use(session({
-    store: new RedisStore({ client: redis.getClient() }),
+    store: new RedisSessionStore({ client: redis.getClient() }),
     secret: process.env.SESSION_SECRET || 'fallback-secret',
     resave: false,
     saveUninitialized: false,
