@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const redis = require('../config/redis');
 
 class AuthController {
   static async register(req, res) {
@@ -69,6 +70,13 @@ class AuthController {
 
       const { password: _, ...userWithoutPassword } = user;
 
+      // Store session in Redis
+      req.session.userId = user.id;
+      req.session.userRole = user.role;
+      
+      // Cache user data
+      await redis.set(`user:${user.id}`, userWithoutPassword, 3600);
+
       res.json({
         success: true,
         data: { 
@@ -88,6 +96,15 @@ class AuthController {
 
   static async getProfile(req, res) {
     try {
+      // Try to get from cache first
+      const cachedUser = await redis.get(`user:${req.user.id}`);
+      if (cachedUser) {
+        return res.json({ 
+          success: true, 
+          data: JSON.parse(cachedUser) 
+        });
+      }
+
       const user = await User.findById(req.user.id);
       
       if (!user) {
@@ -96,6 +113,9 @@ class AuthController {
           error: 'User not found' 
         });
       }
+
+      // Cache the user data
+      await redis.set(`user:${user.id}`, user, 3600);
 
       res.json({ 
         success: true, 
@@ -111,10 +131,30 @@ class AuthController {
   }
 
   static async logout(req, res) {
-    res.json({ 
-      success: true, 
-      message: 'Logged out successfully' 
-    });
+    try {
+      // Clear user cache
+      if (req.user?.id) {
+        await redis.del(`user:${req.user.id}`);
+      }
+      
+      // Destroy session
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Session destroy error:', err);
+        }
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'Logged out successfully' 
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Logout failed' 
+      });
+    }
   }
 }
 

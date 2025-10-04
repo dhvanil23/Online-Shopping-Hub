@@ -6,17 +6,18 @@ const handleValidation = require('../middleware/handleValidation');
 
 const router = express.Router();
 
-router.get('/', productValidation.getProducts, handleValidation, ProductController.getProducts);
+router.get('/', cache(300), productValidation.getProducts, handleValidation, ProductController.getProducts);
 
-router.get('/featured', ProductController.getFeaturedProducts);
+router.get('/featured', cache(600), ProductController.getFeaturedProducts);
 
-router.get('/:id', commonValidation.idParam, handleValidation, ProductController.getProduct);
+router.get('/:id', cache(300), commonValidation.idParam, handleValidation, ProductController.getProduct);
 
 router.post('/', 
   authenticateToken, 
   requireRole('admin'), 
   productValidation.create, 
   handleValidation,
+  invalidateCache('cache:/api/v1/products*'),
   ProductController.createProduct
 );
 
@@ -25,6 +26,7 @@ router.put('/:id',
   requireRole('admin'), 
   productValidation.update, 
   handleValidation,
+  invalidateCache('cache:/api/v1/products*'),
   ProductController.updateProduct
 );
 
@@ -33,6 +35,7 @@ router.delete('/:id',
   requireRole('admin'), 
   commonValidation.idParam, 
   handleValidation,
+  invalidateCache('cache:/api/v1/products*'),
   ProductController.deleteProduct
 );
 

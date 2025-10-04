@@ -1,6 +1,7 @@
 require('dotenv').config();
 const app = require('./app');
 const db = require('./config/database');
+const redis = require('./config/redis');
 const bcrypt = require('bcryptjs');
 
 const PORT = process.env.PORT || 3000;
@@ -11,6 +12,9 @@ const initializeDatabase = async () => {
     // Test database connection
     await db.query('SELECT 1');
     if (process.env.NODE_ENV !== 'production') console.log('✅ Database connected successfully');
+
+    // Initialize Redis connection
+    await redis.connect();
 
     // Create tables if they don't exist
     await db.query(`

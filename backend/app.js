@@ -4,12 +4,15 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 const morgan = require('morgan');
+const session = require('express-session');
+const RedisStore = require('connect-redis').default;
 
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
 
 const db = require('./config/database');
+const redis = require('./config/redis');
 
 const app = express();
 
@@ -46,7 +49,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Rate limiting
+// Redis-backed rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'production' ? 100 : 1000,
@@ -56,8 +59,27 @@ const limiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  store: new rateLimit.MemoryStore(),
+  skip: (req) => {
+    return req.ip === '127.0.0.1' && process.env.NODE_ENV !== 'production';
+  }
 });
 app.use(limiter);
+
+// Redis session store
+if (redis.isConnected()) {
+  app.use(session({
+    store: new RedisStore({ client: redis.getClient() }),
+    secret: process.env.SESSION_SECRET || 'fallback-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000
+    }
+  }));
+}
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -72,14 +94,25 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 // Health check
-app.get('/health', (req, res) => {
-  res.json({
+app.get('/health', async (req, res) => {
+  const health = {
     status: 'OK',
     service: 'ecommerce-api',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    version: process.env.npm_package_version || '1.0.0'
-  });
+    version: process.env.npm_package_version || '1.0.0',
+    redis: redis.isConnected() ? 'connected' : 'disabled'
+  };
+
+  if (redis.isConnected()) {
+    const pingResult = await redis.ping();
+    if (!pingResult) {
+      health.redis = 'error';
+      health.status = 'DEGRADED';
+    }
+  }
+
+  res.json(health);
 });
 
 app.use('/api/v1/auth', authRoutes);
@@ -137,13 +170,19 @@ app.use((error, req, res, next) => {
 
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
-  await db.close();
+  await Promise.all([
+    db.close(),
+    redis.close()
+  ]);
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   console.log('SIGINT received, shutting down gracefully');
-  await db.close();
+  await Promise.all([
+    db.close(),
+    redis.close()
+  ]);
   process.exit(0);
 });
 

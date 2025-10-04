@@ -56,35 +56,23 @@ git clone https://github.com/dhvanil23/Online-Shopping-Hub.git
 cd Online-Shopping-Hub
 ```
 
-2. **Install all dependencies**
+2. **Deploy everything (one command)**
 ```bash
-npm run install:all
+./deploy.sh
 ```
 
-3. **Setup database**
-```bash
-# Using Docker (recommended)
-docker-compose up -d postgres
+This will:
+- Install all dependencies
+- Start PostgreSQL + Redis
+- Build and run backend API
+- Start frontend development server
+- Run health checks
 
-# Or install PostgreSQL locally and create database
-createdb ecommerce_db
-```
-
-4. **Configure environment**
-```bash
-# Backend environment
-cp backend/.env.example backend/.env
-# Update database credentials in backend/.env
-```
-
-5. **Start development servers**
-```bash
-npm run dev
-```
-
-This will start:
+**Services will be available at:**
 - **Backend API**: http://localhost:3000
 - **Frontend**: http://localhost:3001
+- **Database**: PostgreSQL on port 5432
+- **Redis**: Redis on port 6379
 
 ## 🔑 **Demo Credentials**
 

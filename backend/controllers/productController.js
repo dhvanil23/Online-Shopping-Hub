@@ -1,9 +1,19 @@
 const Product = require('../models/Product');
+const redis = require('../config/redis');
 
 class ProductController {
   static async getProducts(req, res) {
     try {
       const { page, limit, search, category, sortBy, sortOrder } = req.query;
+      const cacheKey = `products:${JSON.stringify(req.query)}`;
+      
+      // Try cache first
+      if (redis.isConnected()) {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          return res.json(JSON.parse(cached));
+        }
+      }
       
       const result = await Product.findAll({
         page,
@@ -14,11 +24,18 @@ class ProductController {
         sortOrder
       });
 
-      res.json({
+      const response = {
         success: true,
         data: result,
         message: 'Products retrieved successfully'
-      });
+      };
+
+      // Cache result
+      if (redis.isConnected()) {
+        await redis.set(cacheKey, response, 300);
+      }
+
+      res.json(response);
     } catch (error) {
       console.error('Get products error:', error);
       res.status(500).json({ 
