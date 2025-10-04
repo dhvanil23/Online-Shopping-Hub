@@ -1,0 +1,37 @@
+{
+  "family": "ecommerce-app",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "containerDefinitions": [
+    {
+      "name": "backend",
+      "image": "YOUR_ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/ecommerce-backend:latest",
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {"name": "NODE_ENV", "value": "production"},
+        {"name": "DB_HOST", "value": "your-rds-endpoint.amazonaws.com"},
+        {"name": "DB_NAME", "value": "ecommerce_db"},
+        {"name": "DB_USER", "value": "postgres"},
+        {"name": "DB_PASSWORD", "value": "SecurePass123"},
+        {"name": "JWT_SECRET", "value": "super-secure-jwt-secret-key-2024"}
+      ]
+    },
+    {
+      "name": "frontend",
+      "image": "YOUR_ACCOUNT.dkr.ecr.us-east-1.amazonaws.com/ecommerce-frontend:latest",
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "protocol": "tcp"
+        }
+      ]
+    }
+  ]
+}

@@ -2,12 +2,18 @@ const { Pool } = require('pg');
 
 class Database {
   constructor() {
+    const config = process.env.DATABASE_URL ? 
+      { connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } } :
+      {
+        user: process.env.DB_USER || 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        database: process.env.DB_NAME || 'ecommerce_db',
+        password: process.env.DB_PASSWORD || 'password',
+        port: process.env.DB_PORT || 5432,
+      };
+    
     this.pool = new Pool({
-      user: process.env.DB_USER || 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      database: process.env.DB_NAME || 'ecommerce_db',
-      password: process.env.DB_PASSWORD || 'password',
-      port: process.env.DB_PORT || 5432,
+      ...config,
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
@@ -15,14 +21,11 @@ class Database {
   }
 
   async query(text, params) {
-    const start = Date.now();
     try {
       const res = await this.pool.query(text, params);
-      const duration = Date.now() - start;
-      console.log('Executed query', { text, duration, rows: res.rowCount });
       return res;
     } catch (error) {
-      console.error('Database query error:', error);
+      console.error('DB Error:', error.message);
       throw error;
     }
   }

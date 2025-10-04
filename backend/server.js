@@ -10,7 +10,7 @@ const initializeDatabase = async () => {
   try {
     // Test database connection
     await db.query('SELECT 1');
-    console.log('✅ Database connected successfully');
+    if (process.env.NODE_ENV !== 'production') console.log('✅ Database connected successfully');
 
     // Create demo users if they don't exist
     const demoUsers = [
@@ -26,7 +26,7 @@ const initializeDatabase = async () => {
           'INSERT INTO "Users" (id, email, password, name, role, "isActive", "createdAt", "updatedAt") VALUES (gen_random_uuid(), $1, $2, $3, $4, true, NOW(), NOW())',
           [userData.email, hashedPassword, userData.name, userData.role]
         );
-        console.log(`✅ Demo user created: ${userData.email}`);
+        if (process.env.NODE_ENV !== 'production') console.log(`✅ Demo user created: ${userData.email}`);
       }
     }
 
@@ -54,7 +54,7 @@ const initializeDatabase = async () => {
           [product.name, product.description, product.price, product.category, product.inventory, product.image]
         );
       }
-      console.log(`✅ Created ${demoProducts.length} demo products`);
+      if (process.env.NODE_ENV !== 'production') console.log(`✅ Created ${demoProducts.length} demo products`);
     }
 
   } catch (error) {
