@@ -37,9 +37,7 @@
     "redis": "^4.6.8",
     "express-session": "^1.17.3",
     "connect-redis": "^7.1.0",
-    "redis": "^4.6.8",
-    "express-session": "^1.17.3",
-    "connect-redis": "^7.1.0"
+    "rate-limit-redis": "^4.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",

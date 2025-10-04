@@ -10,6 +10,7 @@ const RedisStore = require('connect-redis').default;
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
+const cartRoutes = require('./routes/cart');
 
 const db = require('./config/database');
 const redis = require('./config/redis');
@@ -50,6 +51,7 @@ app.use(cors({
 }));
 
 // Redis-backed rate limiting
+const RedisStore = require('rate-limit-redis');
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'production' ? 100 : 1000,
@@ -59,7 +61,9 @@ const limiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  store: new rateLimit.MemoryStore(),
+  store: redis.isConnected() ? new RedisStore({
+    sendCommand: (...args) => redis.getClient().sendCommand(args),
+  }) : new rateLimit.MemoryStore(),
   skip: (req) => {
     return req.ip === '127.0.0.1' && process.env.NODE_ENV !== 'production';
   }
@@ -118,6 +122,7 @@ app.get('/health', async (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/orders', orderRoutes);
+app.use('/api/v1/cart', cartRoutes);
 
 app.use('*', (req, res) => {
   res.status(404).json({

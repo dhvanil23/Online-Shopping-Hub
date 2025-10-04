@@ -3,6 +3,7 @@ const ProductController = require('../controllers/productController');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const { productValidation, commonValidation } = require('../middleware/validation');
 const handleValidation = require('../middleware/handleValidation');
+const { cache, invalidateCache } = require('../middleware/cache');
 
 const router = express.Router();
 

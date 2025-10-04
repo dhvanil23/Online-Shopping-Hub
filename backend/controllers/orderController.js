@@ -1,5 +1,6 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const redis = require('../config/redis');
 
 class OrderController {
   static async createOrder(req, res) {
@@ -36,6 +37,14 @@ class OrderController {
         await Product.updateInventory(item.id, item.quantity);
       }
 
+      // Clear user's order cache
+      if (redis.isConnected()) {
+        const keys = await redis.getClient().keys(`orders:${userId}:*`);
+        if (keys.length > 0) {
+          await redis.getClient().del(keys);
+        }
+      }
+
       res.status(201).json({ 
         success: true, 
         data: order,
@@ -55,6 +64,15 @@ class OrderController {
       const { page, limit, status } = req.query;
       const userId = req.user.id;
       const isAdmin = req.user.role === 'admin';
+      const cacheKey = `orders:${userId}:${JSON.stringify(req.query)}`;
+
+      // Try cache first
+      if (redis.isConnected()) {
+        const cached = await redis.get(cacheKey);
+        if (cached) {
+          return res.json(JSON.parse(cached));
+        }
+      }
 
       let result;
       
@@ -64,11 +82,18 @@ class OrderController {
         result = await Order.findByUserId(userId, { page, limit });
       }
 
-      res.json({
+      const response = {
         success: true,
         data: result,
         message: 'Orders retrieved successfully'
-      });
+      };
+
+      // Cache result
+      if (redis.isConnected()) {
+        await redis.set(cacheKey, response, 180); // 3 minutes
+      }
+
+      res.json(response);
     } catch (error) {
       console.error('Get orders error:', error);
       res.status(500).json({ 
