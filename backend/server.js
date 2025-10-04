@@ -12,6 +12,48 @@ const initializeDatabase = async () => {
     await db.query('SELECT 1');
     if (process.env.NODE_ENV !== 'production') console.log('✅ Database connected successfully');
 
+    // Create tables if they don't exist
+    await db.query(`
+      CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+      
+      CREATE TABLE IF NOT EXISTS "Users" (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          email VARCHAR(255) UNIQUE NOT NULL,
+          password VARCHAR(255) NOT NULL,
+          name VARCHAR(255) NOT NULL,
+          role VARCHAR(50) DEFAULT 'customer',
+          "isActive" BOOLEAN DEFAULT true,
+          "lastLogin" TIMESTAMP,
+          "createdAt" TIMESTAMP DEFAULT NOW(),
+          "updatedAt" TIMESTAMP DEFAULT NOW()
+      );
+      
+      CREATE TABLE IF NOT EXISTS "Products" (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          name VARCHAR(255) NOT NULL,
+          description TEXT,
+          price DECIMAL(10,2) NOT NULL,
+          category VARCHAR(100),
+          inventory INTEGER DEFAULT 0,
+          image VARCHAR(500),
+          "isActive" BOOLEAN DEFAULT true,
+          "createdAt" TIMESTAMP DEFAULT NOW(),
+          "updatedAt" TIMESTAMP DEFAULT NOW()
+      );
+      
+      CREATE TABLE IF NOT EXISTS "Orders" (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          "userId" UUID NOT NULL REFERENCES "Users"(id),
+          items JSONB NOT NULL,
+          "totalAmount" DECIMAL(10,2) NOT NULL,
+          status VARCHAR(50) DEFAULT 'pending',
+          "shippingAddress" JSONB,
+          "createdAt" TIMESTAMP DEFAULT NOW(),
+          "updatedAt" TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('✅ Database tables created');
+
     // Create demo users if they don't exist
     const demoUsers = [
       { email: 'customer@demo.com', password: 'password123', name: 'Demo Customer', role: 'customer' },

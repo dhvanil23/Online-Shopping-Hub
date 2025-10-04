@@ -24,6 +24,16 @@ services:
           name: ecommerce-db
           property: connectionString
 
+  - type: web
+    name: ecommerce-frontend
+    env: static
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://ecommerce-backend.onrender.com
+
 databases:
   - name: ecommerce-db
     plan: free
@@ -44,9 +54,13 @@ echo "1. Go to render.com (free signup)"
 echo "2. Connect GitHub repo"
 echo "3. Deploy with render.yaml"
 echo ""
-echo "💰 Cost: $0/month (750 hours free)"
+echo "🌐 You'll get TWO URLs:"
+echo "   - Frontend: https://ecommerce-frontend.onrender.com"
+echo "   - Backend API: https://ecommerce-backend.onrender.com"
+echo ""
+echo "💰 Cost: $0/month (750 hours each service)"
 echo "🗄️ PostgreSQL: Included free"
 echo "⚡ Auto-deploy: On git push"
 echo "🔒 SSL: Included"
 echo ""
-echo "🎯 Truly permanent free tier!"
+echo "🎯 Full-stack deployment on permanent free tier!"

@@ -15,6 +15,16 @@ services:
           name: ecommerce-db
           property: connectionString
 
+  - type: web
+    name: ecommerce-frontend
+    env: static
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://ecommerce-backend.onrender.com
+
 databases:
   - name: ecommerce-db
     plan: free

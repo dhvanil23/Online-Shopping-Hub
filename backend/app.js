@@ -28,7 +28,12 @@ app.use(helmet({
 
 // CORS configuration
 app.use(cors({
-  origin: [process.env.FRONTEND_URL || 'http://localhost:3001', 'http://localhost:3003'],
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:3001', 
+    'http://localhost:3003',
+    'https://ecommerce-frontend.onrender.com',
+    /\.onrender\.com$/
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
