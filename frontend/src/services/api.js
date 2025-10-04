@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
 // Create axios instance
 const api = axios.create({
@@ -38,28 +38,28 @@ api.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-  register: (userData) => api.post('/v1/auth/register', userData),
-  login: (credentials) => api.post('/v1/auth/login', credentials),
-  logout: () => api.post('/v1/auth/logout'),
-  getProfile: () => api.get('/v1/auth/profile'),
+  register: (userData) => api.post('/auth/register', userData),
+  login: (credentials) => api.post('/auth/login', credentials),
+  logout: () => api.post('/auth/logout'),
+  getProfile: () => api.get('/auth/profile'),
 };
 
 // Products API
 export const productsAPI = {
-  getProducts: (params) => api.get('/v1/products', { params }),
-  getProduct: (id) => api.get(`/v1/products/${id}`),
-  createProduct: (productData) => api.post('/v1/products', productData),
-  updateProduct: (id, productData) => api.put(`/v1/products/${id}`, productData),
-  deleteProduct: (id) => api.delete(`/v1/products/${id}`),
-  getFeatured: () => api.get('/v1/products', { params: { limit: 6 } }),
+  getProducts: (params) => api.get('/products', { params }),
+  getProduct: (id) => api.get(`/products/${id}`),
+  createProduct: (productData) => api.post('/products', productData),
+  updateProduct: (id, productData) => api.put(`/products/${id}`, productData),
+  deleteProduct: (id) => api.delete(`/products/${id}`),
+  getFeatured: () => api.get('/products', { params: { limit: 6 } }),
 };
 
 // Orders API
 export const ordersAPI = {
-  createOrder: (orderData) => api.post('/v1/orders', orderData),
-  getOrders: (params) => api.get('/v1/orders', { params }),
-  getOrder: (id) => api.get(`/v1/orders/${id}`),
-  cancelOrder: (id) => api.post(`/v1/orders/${id}/cancel`),
+  createOrder: (orderData) => api.post('/orders', orderData),
+  getOrders: (params) => api.get('/orders', { params }),
+  getOrder: (id) => api.get(`/orders/${id}`),
+  cancelOrder: (id) => api.post(`/orders/${id}/cancel`),
 };
 
 // Cart API (local storage based)
