@@ -34,23 +34,27 @@ app.use(helmet({
 }));
 
 // CORS configuration
-const allowedOrigins = [
-  'http://localhost:3001',
-  'http://localhost:3003',
-  'https://eshopping-hub.netlify.app'
-];
-
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost for development
+    if (origin.includes('localhost')) return callback(null, true);
+    
+    // Allow Netlify domains
+    if (origin.includes('netlify.app')) return callback(null, true);
+    
+    // Allow your specific domain
+    if (origin === 'https://eshopping-hub.netlify.app') return callback(null, true);
+    
+    // Reject other origins
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
 }));
 
 // Rate limiting

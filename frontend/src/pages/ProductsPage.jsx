@@ -35,7 +35,7 @@ const ProductsPage = () => {
       const response = await productsAPI.getProducts(params);
       const data = response.data.data;
       
-      console.log('Pagination data:', data?.pagination);
+
       setProducts(data?.products || []);
       setTotalPages(data?.pagination?.totalPages || 1);
     } catch (error) {
@@ -83,38 +83,69 @@ const ProductsPage = () => {
 
   return (
     <Container className="my-4">
-      <Row className="mb-4">
-        <Col>
-          <h1>Products</h1>
-          <p className="text-muted">Browse our collection of products</p>
+      <Row className="mb-5">
+        <Col className="text-center">
+          <h1 
+            className="display-5 fw-bold mb-3"
+            style={{ color: '#2c3e50' }}
+          >
+            Our Products
+          </h1>
+          <p 
+            className="lead text-muted mb-0"
+            style={{ fontSize: '1.2rem' }}
+          >
+            Discover amazing products at great prices
+          </p>
         </Col>
       </Row>
 
       {/* Search and Filters */}
-      <Row className="mb-4">
+      <Row className="mb-5">
         <Col md={8}>
           <Form onSubmit={handleSearch}>
-            <InputGroup>
+            <InputGroup size="lg">
               <Form.Control
                 type="text"
-                placeholder="Search products..."
+                placeholder="Search for products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  borderRadius: '25px 0 0 25px',
+                  border: '2px solid #e9ecef',
+                  fontSize: '1rem'
+                }}
               />
-              <Button variant="primary" type="submit">
-                Search
+              <Button 
+                variant="primary" 
+                type="submit"
+                style={{
+                  borderRadius: '0 25px 25px 0',
+                  backgroundColor: '#3498db',
+                  border: '2px solid #3498db',
+                  paddingLeft: '2rem',
+                  paddingRight: '2rem'
+                }}
+              >
+                🔍 Search
               </Button>
             </InputGroup>
           </Form>
         </Col>
         <Col md={4}>
           <Form.Select
+            size="lg"
             value={`${sortBy}-${sortOrder}`}
             onChange={(e) => {
               const [field, order] = e.target.value.split('-');
               setSortBy(field);
               setSortOrder(order);
               setCurrentPage(1);
+            }}
+            style={{
+              borderRadius: '25px',
+              border: '2px solid #e9ecef',
+              fontSize: '1rem'
             }}
           >
             <option value="name-asc">Name (A-Z)</option>
@@ -146,45 +177,110 @@ const ProductsPage = () => {
               <Row>
                 {products.map((product) => (
                   <Col key={product.id} sm={6} md={4} lg={3} className="mb-4">
-                    <Card className="h-100 shadow-sm">
-                      <Card.Img
-                        variant="top"
-                        src={product.image || `https://via.placeholder.com/250x200?text=${encodeURIComponent(product.name)}`}
-                        style={{ height: '200px', objectFit: 'cover' }}
-                        onError={(e) => {
-                          e.target.src = `https://via.placeholder.com/250x200?text=${encodeURIComponent(product.name)}`;
-                        }}
-                      />
-                      <Card.Body className="d-flex flex-column">
-                        <Card.Title className="h6">{product.name}</Card.Title>
-                        <Card.Text className="text-muted small flex-grow-1">
+                    <Card 
+                      className="h-100 border-0 shadow-sm"
+                      style={{
+                        borderRadius: '15px',
+                        transition: 'all 0.3s ease',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-5px)';
+                        e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+                      }}
+                    >
+                      <div className="position-relative overflow-hidden" style={{ borderRadius: '15px 15px 0 0' }}>
+                        <Card.Img
+                          variant="top"
+                          src={product.image || `https://via.placeholder.com/250x200?text=${encodeURIComponent(product.name)}`}
+                          style={{ 
+                            height: '220px', 
+                            objectFit: 'cover',
+                            transition: 'transform 0.3s ease'
+                          }}
+                          onError={(e) => {
+                            e.target.src = `https://via.placeholder.com/250x200?text=${encodeURIComponent(product.name)}`;
+                          }}
+                          onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+                          onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                        />
+                        {product.inventory > 0 ? (
+                          <span 
+                            className="position-absolute top-0 end-0 badge bg-success m-2"
+                            style={{ borderRadius: '10px' }}
+                          >
+                            In Stock
+                          </span>
+                        ) : (
+                          <span 
+                            className="position-absolute top-0 end-0 badge bg-danger m-2"
+                            style={{ borderRadius: '10px' }}
+                          >
+                            Out of Stock
+                          </span>
+                        )}
+                      </div>
+                      <Card.Body className="d-flex flex-column p-3">
+                        <Card.Title 
+                          className="h6 mb-2"
+                          style={{ 
+                            color: '#2c3e50',
+                            fontWeight: '600',
+                            fontSize: '1rem'
+                          }}
+                        >
+                          {product.name}
+                        </Card.Title>
+                        <Card.Text 
+                          className="text-muted small flex-grow-1 mb-3"
+                          style={{ fontSize: '0.85rem', lineHeight: '1.4' }}
+                        >
                           {product.description?.substring(0, 80)}...
                         </Card.Text>
                         <div className="mt-auto">
-                          <div className="d-flex justify-content-between align-items-center mb-2">
-                            <h6 className="text-primary mb-0">
+                          <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h5 
+                              className="mb-0"
+                              style={{ 
+                                color: '#e74c3c',
+                                fontWeight: '700',
+                                fontSize: '1.3rem'
+                              }}
+                            >
                               ${parseFloat(product.price).toFixed(2)}
-                            </h6>
-                            {product.inventory > 0 ? (
-                              <small className="text-success">In Stock</small>
-                            ) : (
-                              <small className="text-danger">Out of Stock</small>
-                            )}
+                            </h5>
                           </div>
-                          <div className="d-grid gap-2">
+                          <div className="d-flex gap-2">
                             <Button
                               as={Link}
                               to={`/products/${product.id}`}
                               variant="outline-primary"
                               size="sm"
+                              className="flex-fill"
+                              style={{
+                                borderRadius: '20px',
+                                fontWeight: '500',
+                                border: '2px solid #3498db'
+                              }}
                             >
-                              View Details
+                              View
                             </Button>
                             <Button
                               variant="primary"
                               size="sm"
+                              className="flex-fill"
                               onClick={() => addToCart(product)}
                               disabled={product.inventory <= 0}
+                              style={{
+                                borderRadius: '20px',
+                                fontWeight: '500',
+                                backgroundColor: '#3498db',
+                                border: 'none'
+                              }}
                             >
                               Add to Cart
                             </Button>
@@ -194,15 +290,6 @@ const ProductsPage = () => {
                     </Card>
                   </Col>
                 ))}
-              </Row>
-
-              {/* Debug Info */}
-              <Row className="mt-2">
-                <Col className="text-center">
-                  <small className="text-muted">
-                    Page {currentPage} of {totalPages} | Showing {products.length} products
-                  </small>
-                </Col>
               </Row>
 
               {/* Pagination */}
@@ -250,10 +337,38 @@ const ProductsPage = () => {
             </>
           ) : (
             <div className="text-center py-5">
-              <h4>No products found</h4>
-              <p className="text-muted">
+              <div 
+                className="mx-auto mb-4 d-flex align-items-center justify-content-center"
+                style={{
+                  width: '100px',
+                  height: '100px',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '50%',
+                  fontSize: '3rem'
+                }}
+              >
+                🔍
+              </div>
+              <h4 style={{ color: '#2c3e50' }}>No products found</h4>
+              <p className="text-muted lead">
                 {searchTerm ? 'Try adjusting your search terms' : 'No products available at the moment'}
               </p>
+              {searchTerm && (
+                <Button 
+                  variant="primary" 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setCurrentPage(1);
+                  }}
+                  style={{
+                    borderRadius: '25px',
+                    paddingLeft: '2rem',
+                    paddingRight: '2rem'
+                  }}
+                >
+                  Clear Search
+                </Button>
+              )}
             </div>
           )}
         </>

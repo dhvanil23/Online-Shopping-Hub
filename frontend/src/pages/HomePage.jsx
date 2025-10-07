@@ -52,31 +52,142 @@ const HomePage = () => {
   return (
     <>
       {/* Hero Section */}
-      <div className="bg-primary text-white py-5">
-        <Container>
-          <Row className="align-items-center">
+      <div 
+        className="py-5 position-relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          minHeight: '60vh'
+        }}
+      >
+        <Container className="position-relative">
+          <Row className="align-items-center min-vh-50">
             <Col lg={6}>
-              <h1 className="display-4 fw-bold mb-3">
-                Welcome to E-Commerce Platform
+              <h1 
+                className="display-4 fw-bold mb-4 text-white"
+                style={{ lineHeight: '1.2' }}
+              >
+                Modern Shopping
+                <br />
+                <span style={{ color: '#ffd700' }}>Experience</span>
               </h1>
-              <p className="lead mb-4">
-                Discover amazing products with our enterprise-grade microservices platform.
-                Built with Node.js, React, and deployed on AWS.
+              <p className="lead mb-4 text-white-50" style={{ fontSize: '1.2rem' }}>
+                Discover quality products with fast delivery and secure checkout.
+                Your satisfaction is our priority.
               </p>
-              <Button as={Link} to="/products" variant="light" size="lg">
-                Shop Now
-              </Button>
+              <div className="d-flex gap-3">
+                <Button 
+                  as={Link} 
+                  to="/products" 
+                  size="lg"
+                  className="px-4 py-3"
+                  style={{
+                    backgroundColor: '#ffd700',
+                    border: 'none',
+                    color: '#333',
+                    borderRadius: '25px',
+                    fontWeight: '600'
+                  }}
+                >
+                  Shop Now
+                </Button>
+                <Button 
+                  as={Link} 
+                  to="/products" 
+                  variant="outline-light"
+                  size="lg"
+                  className="px-4 py-3"
+                  style={{
+                    borderRadius: '25px',
+                    fontWeight: '600'
+                  }}
+                >
+                  Browse Categories
+                </Button>
+              </div>
             </Col>
             <Col lg={6} className="text-center">
-              <div className="bg-light rounded p-4 text-dark">
-                <h3>🚀 Enterprise Features</h3>
-                <ul className="list-unstyled mt-3">
-                  <li>✅ Microservices Architecture</li>
-                  <li>✅ AWS Cloud Deployment</li>
-                  <li>✅ Real-time Notifications</li>
-                  <li>✅ Secure Payments</li>
-                  <li>✅ Auto-scaling Infrastructure</li>
-                </ul>
+              <div 
+                className="p-4 rounded-4 shadow-lg"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}
+              >
+                <div className="row g-3">
+                  <div className="col-6">
+                    <div className="text-center p-3">
+                      <div 
+                        className="mx-auto mb-2 d-flex align-items-center justify-content-center"
+                        style={{
+                          width: '60px',
+                          height: '60px',
+                          backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                          borderRadius: '50%',
+                          fontSize: '1.5rem'
+                        }}
+                      >
+                        🚚
+                      </div>
+                      <h6 className="text-white mb-1">Fast Delivery</h6>
+                      <small className="text-white-50">2-day shipping</small>
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <div className="text-center p-3">
+                      <div 
+                        className="mx-auto mb-2 d-flex align-items-center justify-content-center"
+                        style={{
+                          width: '60px',
+                          height: '60px',
+                          backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                          borderRadius: '50%',
+                          fontSize: '1.5rem'
+                        }}
+                      >
+                        🔒
+                      </div>
+                      <h6 className="text-white mb-1">Secure Payment</h6>
+                      <small className="text-white-50">SSL encrypted</small>
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <div className="text-center p-3">
+                      <div 
+                        className="mx-auto mb-2 d-flex align-items-center justify-content-center"
+                        style={{
+                          width: '60px',
+                          height: '60px',
+                          backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                          borderRadius: '50%',
+                          fontSize: '1.5rem'
+                        }}
+                      >
+                        ⭐
+                      </div>
+                      <h6 className="text-white mb-1">Quality Products</h6>
+                      <small className="text-white-50">Verified sellers</small>
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <div className="text-center p-3">
+                      <div 
+                        className="mx-auto mb-2 d-flex align-items-center justify-content-center"
+                        style={{
+                          width: '60px',
+                          height: '60px',
+                          backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                          borderRadius: '50%',
+                          fontSize: '1.5rem'
+                        }}
+                      >
+                        📞
+                      </div>
+                      <h6 className="text-white mb-1">24/7 Support</h6>
+                      <small className="text-white-50">Always here</small>
+                    </div>
+                  </div>
+                </div>
               </div>
             </Col>
           </Row>
@@ -149,30 +260,90 @@ const HomePage = () => {
           </Col>
         </Row>
 
-        {/* Platform Features */}
+        {/* Why Choose Us */}
         <Row className="mb-5">
           <Col>
-            <h2 className="text-center mb-4">Platform Architecture</h2>
-            <Row>
-              <Col md={4} className="text-center mb-4">
-                <div className="bg-light rounded p-4">
-                  <h3>🔐</h3>
-                  <h5>Auth Service</h5>
-                  <p>JWT authentication with role-based access control</p>
+            <h2 className="text-center mb-5" style={{ color: '#2c3e50' }}>Why Choose ShopHub?</h2>
+            <Row className="g-4">
+              <Col md={4} className="text-center">
+                <div 
+                  className="p-4 h-100 border-0 shadow-sm"
+                  style={{
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '15px',
+                    transition: 'transform 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.transform = 'translateY(-5px)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+                >
+                  <div 
+                    className="mx-auto mb-3 d-flex align-items-center justify-content-center"
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      backgroundColor: '#3498db',
+                      borderRadius: '50%',
+                      fontSize: '2rem'
+                    }}
+                  >
+                    🛍️
+                  </div>
+                  <h5 className="mb-3" style={{ color: '#2c3e50' }}>Wide Selection</h5>
+                  <p className="text-muted">Thousands of products across multiple categories to meet all your needs.</p>
                 </div>
               </Col>
-              <Col md={4} className="text-center mb-4">
-                <div className="bg-light rounded p-4">
-                  <h3>📦</h3>
-                  <h5>Product Service</h5>
-                  <p>Catalog management with Redis caching</p>
+              <Col md={4} className="text-center">
+                <div 
+                  className="p-4 h-100 border-0 shadow-sm"
+                  style={{
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '15px',
+                    transition: 'transform 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.transform = 'translateY(-5px)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+                >
+                  <div 
+                    className="mx-auto mb-3 d-flex align-items-center justify-content-center"
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      backgroundColor: '#e74c3c',
+                      borderRadius: '50%',
+                      fontSize: '2rem'
+                    }}
+                  >
+                    💳
+                  </div>
+                  <h5 className="mb-3" style={{ color: '#2c3e50' }}>Easy Checkout</h5>
+                  <p className="text-muted">Simple and secure payment process with multiple payment options.</p>
                 </div>
               </Col>
-              <Col md={4} className="text-center mb-4">
-                <div className="bg-light rounded p-4">
-                  <h3>🛒</h3>
-                  <h5>Order Service</h5>
-                  <p>Order processing with payment integration</p>
+              <Col md={4} className="text-center">
+                <div 
+                  className="p-4 h-100 border-0 shadow-sm"
+                  style={{
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '15px',
+                    transition: 'transform 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.transform = 'translateY(-5px)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+                >
+                  <div 
+                    className="mx-auto mb-3 d-flex align-items-center justify-content-center"
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      backgroundColor: '#27ae60',
+                      borderRadius: '50%',
+                      fontSize: '2rem'
+                    }}
+                  >
+                    🎆
+                  </div>
+                  <h5 className="mb-3" style={{ color: '#2c3e50' }}>Best Prices</h5>
+                  <p className="text-muted">Competitive pricing with regular discounts and special offers.</p>
                 </div>
               </Col>
             </Row>
@@ -182,13 +353,33 @@ const HomePage = () => {
         {/* Call to Action */}
         <Row>
           <Col className="text-center">
-            <div className="bg-primary text-white rounded p-5">
-              <h3>Ready to Start Shopping?</h3>
-              <p className="lead">
-                Experience our enterprise-grade e-commerce platform
+            <div 
+              className="p-5 rounded-4 text-white position-relative overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              }}
+            >
+              <h3 className="mb-3" style={{ fontSize: '2.5rem', fontWeight: '700' }}>
+                Start Shopping Today!
+              </h3>
+              <p className="lead mb-4" style={{ fontSize: '1.3rem', opacity: '0.9' }}>
+                Join thousands of satisfied customers
               </p>
-              <Button as={Link} to="/products" variant="light" size="lg">
-                Browse All Products
+              <Button 
+                as={Link} 
+                to="/products" 
+                size="lg"
+                className="px-5 py-3"
+                style={{
+                  backgroundColor: '#ffd700',
+                  border: 'none',
+                  color: '#333',
+                  borderRadius: '25px',
+                  fontWeight: '600',
+                  fontSize: '1.1rem'
+                }}
+              >
+                Browse All Products →
               </Button>
             </div>
           </Col>
