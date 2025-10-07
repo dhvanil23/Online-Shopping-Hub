@@ -1,9 +1,4 @@
 services:
-  - type: redis
-    name: ecommerce-redis
-    plan: free
-    maxmemoryPolicy: allkeys-lru
-
   - type: web
     name: ecommerce-backend
     env: node
@@ -13,16 +8,37 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DATABASE_URL
+      - key: PORT
+        value: 3000
+      - key: DB_HOST
         fromDatabase:
           name: ecommerce-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: ecommerce-redis
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: ecommerce-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: ecommerce-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: ecommerce-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: ecommerce-db
+          property: password
       - key: JWT_SECRET
         generateValue: true
       - key: SESSION_SECRET
         generateValue: true
+      - key: REDIS_URL
+        value: redis://default:ARqpAAImcDI2ZmU3MmRhYzY4OWM0ZGI1ODg0Zjk0ODg4YTk0MjEzZHAyNjgyNQ@grateful-lemur-6825.upstash.io:6379
+
+databases:
+  - name: ecommerce-db
+    databaseName: ecommerce_db
+    user: postgres
+    plan: free

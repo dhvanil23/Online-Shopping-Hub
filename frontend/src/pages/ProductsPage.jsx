@@ -26,7 +26,7 @@ const ProductsPage = () => {
       setLoading(true);
       const params = {
         page: currentPage,
-        limit: 12,
+        limit: 24,
         search: searchTerm,
         sortBy,
         sortOrder
@@ -35,6 +35,7 @@ const ProductsPage = () => {
       const response = await productsAPI.getProducts(params);
       const data = response.data.data;
       
+      console.log('Pagination data:', data?.pagination);
       setProducts(data?.products || []);
       setTotalPages(data?.pagination?.totalPages || 1);
     } catch (error) {
@@ -193,6 +194,15 @@ const ProductsPage = () => {
                     </Card>
                   </Col>
                 ))}
+              </Row>
+
+              {/* Debug Info */}
+              <Row className="mt-2">
+                <Col className="text-center">
+                  <small className="text-muted">
+                    Page {currentPage} of {totalPages} | Showing {products.length} products
+                  </small>
+                </Col>
               </Row>
 
               {/* Pagination */}
