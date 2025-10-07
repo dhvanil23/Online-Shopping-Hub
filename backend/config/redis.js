@@ -8,7 +8,6 @@ class RedisClient {
 
   async connect() {
     if (!process.env.REDIS_URL) {
-      console.log('Redis URL not provided, skipping Redis connection');
       return;
     }
 
@@ -16,19 +15,28 @@ class RedisClient {
       this.client = createClient({
         url: process.env.REDIS_URL,
         socket: {
-          connectTimeout: 5000,
+          tls: true,
+          rejectUnauthorized: false,
+          connectTimeout: 10000,
+          commandTimeout: 5000,
           lazyConnect: true,
         }
       });
 
       this.client.on('error', (err) => {
-        console.error('Redis Client Error:', err);
+        if (!err.message.includes('Socket closed unexpectedly')) {
+          console.error('Redis Client Error:', err);
+        }
         this.connected = false;
       });
 
       this.client.on('connect', () => {
         console.log('✅ Redis connected');
         this.connected = true;
+      });
+
+      this.client.on('end', () => {
+        this.connected = false;
       });
 
       await this.client.connect();
