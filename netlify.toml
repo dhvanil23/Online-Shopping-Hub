@@ -5,7 +5,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
-  VITE_API_URL = "https://ecommerce-backend-ygbi.onrender.com/api/v1"
+  VITE_API_URL = "https://ecommerce-backend-ygbi.onrender.com"
 
 [[redirects]]
   from = "/*"
