@@ -76,31 +76,39 @@ const initializeDatabase = async () => {
       }
     }
 
-    // Create demo products if they don't exist
+    // Create large product dataset if no products exist
     const productCount = await db.query('SELECT COUNT(*) FROM "Products"');
     if (parseInt(productCount.rows[0].count) === 0) {
-      const demoProducts = [
-        { name: 'Wireless Headphones', description: 'Premium noise-cancelling wireless headphones with 30-hour battery life', price: 199.99, category: 'Electronics', inventory: 50, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=200&fit=crop' },
-        { name: 'Smart Watch', description: 'Advanced fitness tracking smartwatch with heart rate monitor', price: 299.99, category: 'Electronics', inventory: 30, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=200&fit=crop' },
-        { name: 'Coffee Maker', description: 'Programmable drip coffee maker with thermal carafe', price: 89.99, category: 'Home', inventory: 25, image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=300&h=200&fit=crop' },
-        { name: 'Running Shoes', description: 'Lightweight running shoes with responsive cushioning', price: 129.99, category: 'Sports', inventory: 40, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=200&fit=crop' },
-        { name: 'Laptop Backpack', description: 'Water-resistant laptop backpack with USB charging port', price: 59.99, category: 'Accessories', inventory: 60, image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=200&fit=crop' },
-        { name: 'Bluetooth Speaker', description: 'Waterproof portable speaker with 360-degree sound', price: 79.99, category: 'Electronics', inventory: 35, image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=300&h=200&fit=crop' },
-        { name: 'Yoga Mat', description: 'Non-slip eco-friendly yoga mat with carrying strap', price: 39.99, category: 'Sports', inventory: 45, image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=300&h=200&fit=crop' },
-        { name: 'Desk Lamp', description: 'LED desk lamp with adjustable brightness and USB charging', price: 49.99, category: 'Home', inventory: 30, image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=300&h=200&fit=crop' },
-        { name: 'Wireless Mouse', description: 'Ergonomic wireless mouse with precision tracking', price: 29.99, category: 'Electronics', inventory: 80, image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=300&h=200&fit=crop' },
-        { name: 'Water Bottle', description: 'Insulated stainless steel water bottle keeps drinks cold 24hrs', price: 24.99, category: 'Sports', inventory: 100, image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=300&h=200&fit=crop' },
-        { name: 'Phone Case', description: 'Shockproof phone case with wireless charging compatibility', price: 19.99, category: 'Accessories', inventory: 150, image: 'https://images.unsplash.com/photo-1556656793-08538906a9f8?w=300&h=200&fit=crop' },
-        { name: 'Gaming Keyboard', description: 'Mechanical gaming keyboard with RGB backlighting', price: 149.99, category: 'Electronics', inventory: 25, image: 'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=300&h=200&fit=crop' }
-      ];
-
-      for (const product of demoProducts) {
-        await db.query(
-          'INSERT INTO "Products" (id, name, description, price, category, inventory, image, "isActive", "createdAt", "updatedAt") VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, true, NOW(), NOW())',
-          [product.name, product.description, product.price, product.category, product.inventory, product.image]
-        );
+      console.log('🌱 Seeding large product dataset...');
+      
+      const categories = ['Electronics', 'Clothing', 'Home', 'Sports', 'Books', 'Beauty', 'Automotive', 'Toys'];
+      const brands = ['Apple', 'Samsung', 'Nike', 'Adidas', 'Sony', 'LG', 'Canon', 'Dell', 'HP', 'Microsoft'];
+      
+      const BATCH_SIZE = 100;
+      const TOTAL_PRODUCTS = 2000;
+      
+      for (let i = 0; i < TOTAL_PRODUCTS; i += BATCH_SIZE) {
+        const batch = [];
+        const values = [];
+        
+        for (let j = 0; j < BATCH_SIZE && (i + j) < TOTAL_PRODUCTS; j++) {
+          const productId = i + j + 1;
+          batch.push(`(gen_random_uuid(), $${j * 6 + 1}, $${j * 6 + 2}, $${j * 6 + 3}, $${j * 6 + 4}, $${j * 6 + 5}, $${j * 6 + 6}, true, NOW(), NOW())`);
+          values.push(
+            `Product ${productId} - ${brands[Math.floor(Math.random() * brands.length)]}`,
+            `High-quality product with premium features. Perfect for everyday use. Product ID: ${productId}`,
+            Math.floor(Math.random() * 500) + 10,
+            categories[Math.floor(Math.random() * categories.length)],
+            Math.floor(Math.random() * 200) + 5,
+            `https://picsum.photos/300/200?random=${productId}`
+          );
+        }
+        
+        const query = `INSERT INTO "Products" (id, name, description, price, category, inventory, image, "isActive", "createdAt", "updatedAt") VALUES ${batch.join(', ')}`;
+        await db.query(query, values);
       }
-      if (process.env.NODE_ENV !== 'production') console.log(`✅ Created ${demoProducts.length} demo products`);
+      
+      console.log(`✅ Seeded ${TOTAL_PRODUCTS} products for e-commerce scale`);
     }
 
   } catch (error) {

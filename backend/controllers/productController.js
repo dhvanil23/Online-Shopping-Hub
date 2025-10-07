@@ -92,6 +92,14 @@ class ProductController {
         image
       });
 
+      // Invalidate product cache
+      if (redis.isConnected()) {
+        const keys = await redis.keys('products:*');
+        if (keys.length > 0) {
+          await redis.del(...keys);
+        }
+      }
+
       res.status(201).json({ 
         success: true, 
         data: product,
@@ -134,6 +142,14 @@ class ProductController {
         });
       }
 
+      // Invalidate product cache
+      if (redis.isConnected()) {
+        const keys = await redis.keys('products:*');
+        if (keys.length > 0) {
+          await redis.del(...keys);
+        }
+      }
+
       res.json({ 
         success: true, 
         data: product,
@@ -168,6 +184,14 @@ class ProductController {
       }
 
       await Product.delete(id);
+
+      // Invalidate product cache
+      if (redis.isConnected()) {
+        const keys = await redis.keys('products:*');
+        if (keys.length > 0) {
+          await redis.del(...keys);
+        }
+      }
 
       res.json({ 
         success: true, 

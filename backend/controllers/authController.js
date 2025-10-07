@@ -74,8 +74,10 @@ class AuthController {
       req.session.userId = user.id;
       req.session.userRole = user.role;
       
-      // Cache user data
-      await redis.set(`user:${user.id}`, userWithoutPassword, 3600);
+      // Cache user data (if Redis is available)
+      if (redis.isConnected()) {
+        await redis.set(`user:${user.id}`, userWithoutPassword, 3600);
+      }
 
       res.json({
         success: true,
@@ -96,13 +98,15 @@ class AuthController {
 
   static async getProfile(req, res) {
     try {
-      // Try to get from cache first
-      const cachedUser = await redis.get(`user:${req.user.id}`);
-      if (cachedUser) {
-        return res.json({ 
-          success: true, 
-          data: JSON.parse(cachedUser) 
-        });
+      // Try to get from cache first (if Redis is available)
+      if (redis.isConnected()) {
+        const cachedUser = await redis.get(`user:${req.user.id}`);
+        if (cachedUser) {
+          return res.json({ 
+            success: true, 
+            data: JSON.parse(cachedUser) 
+          });
+        }
       }
 
       const user = await User.findById(req.user.id);
@@ -114,8 +118,10 @@ class AuthController {
         });
       }
 
-      // Cache the user data
-      await redis.set(`user:${user.id}`, user, 3600);
+      // Cache the user data (if Redis is available)
+      if (redis.isConnected()) {
+        await redis.set(`user:${user.id}`, user, 3600);
+      }
 
       res.json({ 
         success: true, 
@@ -132,17 +138,19 @@ class AuthController {
 
   static async logout(req, res) {
     try {
-      // Clear user cache
-      if (req.user?.id) {
+      // Clear user cache (if Redis is available)
+      if (req.user?.id && redis.isConnected()) {
         await redis.del(`user:${req.user.id}`);
       }
       
-      // Destroy session
-      req.session.destroy((err) => {
-        if (err) {
-          console.error('Session destroy error:', err);
-        }
-      });
+      // Destroy session (if session middleware is available)
+      if (req.session) {
+        req.session.destroy((err) => {
+          if (err) {
+            console.error('Session destroy error:', err);
+          }
+        });
+      }
 
       res.json({ 
         success: true, 

@@ -17,6 +17,9 @@ const redis = require('./config/redis');
 
 const app = express();
 
+// Trust proxy for deployment platforms
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -50,8 +53,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Redis-backed rate limiting
-const RedisRateLimitStore = require('rate-limit-redis');
+// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV === 'production' ? 100 : 1000,
@@ -61,29 +63,24 @@ const limiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  store: redis.isConnected() ? new RedisRateLimitStore({
-    sendCommand: (...args) => redis.getClient().sendCommand(args),
-  }) : new rateLimit.MemoryStore(),
   skip: (req) => {
     return req.ip === '127.0.0.1' && process.env.NODE_ENV !== 'production';
   }
 });
 app.use(limiter);
 
-// Redis session store
-if (redis.isConnected()) {
-  app.use(session({
-    store: new RedisSessionStore({ client: redis.getClient() }),
-    secret: process.env.SESSION_SECRET || 'fallback-secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000
-    }
-  }));
-}
+// Session store
+app.use(session({
+  store: redis.isConnected() ? new RedisSessionStore({ client: redis.getClient() }) : undefined,
+  secret: process.env.SESSION_SECRET || 'fallback-secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000
+  }
+}));
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
