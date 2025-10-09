@@ -7,6 +7,9 @@ const AdminPage = () => {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [cursor, setCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [productForm, setProductForm] = useState({
@@ -19,16 +22,51 @@ const AdminPage = () => {
   });
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(true);
     fetchOrders();
   }, []);
 
-  const fetchProducts = async () => {
+  // Infinite scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
+        if (hasMore && !loading && !loadingMore) {
+          fetchProducts(false);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasMore, loading, loadingMore, cursor]);
+
+  const fetchProducts = async (reset = false) => {
     try {
-      const response = await productsAPI.getProducts({ limit: 100 });
-      setProducts(response.data.data?.products || []);
+      if (reset) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+      
+      const response = await productsAPI.getProducts({
+        cursor: reset ? null : cursor,
+        limit: 50
+      });
+      const data = response.data.data;
+      
+      if (reset) {
+        setProducts(data?.products || []);
+      } else {
+        setProducts(prev => [...prev, ...(data?.products || [])]);
+      }
+      
+      setCursor(data?.nextCursor);
+      setHasMore(data?.hasMore || false);
     } catch (error) {
       console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -70,7 +108,10 @@ const AdminPage = () => {
         sku: '',
         category: ''
       });
-      fetchProducts();
+      setProducts([]);
+      setCursor(null);
+      setHasMore(true);
+      fetchProducts(true);
     } catch (error) {
       toast.error('Failed to save product');
     } finally {
@@ -96,7 +137,10 @@ const AdminPage = () => {
       try {
         await productsAPI.deleteProduct(productId);
         toast.success('Product deleted successfully!');
-        fetchProducts();
+        setProducts([]);
+        setCursor(null);
+        setHasMore(true);
+        fetchProducts(true);
       } catch (error) {
         toast.error('Failed to delete product');
       }
@@ -153,7 +197,7 @@ const AdminPage = () => {
           <Card className="text-center">
             <Card.Body>
               <h3 className="text-info">
-                ${orders.reduce((sum, order) => sum + parseFloat(order.totalAmount || 0), 0).toFixed(2)}
+                ₹{orders.reduce((sum, order) => sum + parseFloat(order.totalAmount || 0), 0).toFixed(2)}
               </h3>
               <p className="mb-0">Total Revenue</p>
             </Card.Body>
@@ -206,7 +250,7 @@ const AdminPage = () => {
                         </small>
                       </td>
                       <td>{product.sku}</td>
-                      <td>${parseFloat(product.price).toFixed(2)}</td>
+                      <td>₹{parseFloat(product.price).toFixed(2)}</td>
                       <td>
                         <Badge bg={product.inventory > 10 ? 'success' : product.inventory > 0 ? 'warning' : 'danger'}>
                           {product.inventory}
@@ -234,6 +278,21 @@ const AdminPage = () => {
                   ))}
                 </tbody>
               </Table>
+              
+              {loadingMore && (
+                <div className="text-center py-3">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading more products...</span>
+                  </div>
+                  <p className="text-muted mt-2 mb-0">Loading more products...</p>
+                </div>
+              )}
+              
+              {!hasMore && products.length > 0 && (
+                <div className="text-center py-3">
+                  <p className="text-muted mb-0">All products loaded ({products.length} total)</p>
+                </div>
+              )}
             </Card.Body>
           </Card>
         </Tab>
@@ -268,7 +327,7 @@ const AdminPage = () => {
                         <br />
                         <small className="text-muted">{order.shippingAddress?.email}</small>
                       </td>
-                      <td>${parseFloat(order.totalAmount || 0).toFixed(2)}</td>
+                      <td>₹{parseFloat(order.totalAmount || 0).toFixed(2)}</td>
                       <td>{getOrderStatusBadge(order.status)}</td>
                       <td>
                         <Button

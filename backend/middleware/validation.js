@@ -123,7 +123,7 @@ const orderValidation = {
     body('items')
       .isArray({ min: 1 })
       .withMessage('Items array is required and must not be empty'),
-    body('items.*.id')
+    body('items.*.productId')
       .isUUID()
       .withMessage('Each item must have a valid product ID'),
     body('items.*.quantity')

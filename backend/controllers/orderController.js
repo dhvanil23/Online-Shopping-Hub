@@ -10,11 +10,11 @@ class OrderController {
 
       // Validate items and check inventory
       for (const item of items) {
-        const product = await Product.findById(item.id);
+        const product = await Product.findById(item.productId);
         if (!product) {
           return res.status(400).json({ 
             success: false, 
-            error: `Product ${item.name} not found` 
+            error: `Product not found` 
           });
         }
         
@@ -34,7 +34,7 @@ class OrderController {
       });
 
       for (const item of items) {
-        await Product.updateInventory(item.id, item.quantity);
+        await Product.updateInventory(item.productId, item.quantity);
       }
 
       // Clear user's order cache
@@ -249,7 +249,7 @@ class OrderController {
 
       const items = JSON.parse(order.items);
       for (const item of items) {
-        await Product.updateInventory(item.id, -item.quantity); // Negative to add back
+        await Product.updateInventory(item.productId, -item.quantity); // Negative to add back
       }
 
       res.json({ 
