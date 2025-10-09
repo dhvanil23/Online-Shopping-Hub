@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import { AuthProvider } from './contexts/AuthContext';
 import { SocketProvider } from './contexts/SocketContext';
+import { NotificationsProvider } from './contexts/NotificationsContext';
 import AppNavbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
@@ -17,13 +18,15 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrdersPage from './pages/OrdersPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPage from './pages/AdminPage';
+import NotificationsPage from './pages/NotificationsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <AuthProvider>
       <SocketProvider>
-        <Router>
+        <NotificationsProvider>
+          <Router>
         <div className="App">
           <AppNavbar />
           
@@ -50,6 +53,11 @@ function App() {
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/notifications" element={
+                <ProtectedRoute>
+                  <NotificationsPage />
                 </ProtectedRoute>
               } />
               <Route path="/admin" element={
@@ -237,7 +245,8 @@ function App() {
             pauseOnHover
           />
         </div>
-      </Router>
+          </Router>
+        </NotificationsProvider>
       </SocketProvider>
     </AuthProvider>
   );

@@ -244,6 +244,24 @@ class ProductController {
       });
     }
   }
+
+  static async getTotalCount(req, res) {
+    try {
+      const total = await Product.getTotalCount();
+      
+      res.json({
+        success: true,
+        data: { total },
+        message: 'Product count retrieved successfully'
+      });
+    } catch (error) {
+      console.error('Get product count error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch product count' 
+      });
+    }
+  }
 }
 
 module.exports = ProductController;

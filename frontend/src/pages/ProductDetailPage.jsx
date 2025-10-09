@@ -17,11 +17,25 @@ const ProductDetailPage = () => {
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
   const { isAuthenticated, user } = useAuth();
-  const { joinProduct } = useSocket();
+  const { socket, joinProduct } = useSocket();
 
   useEffect(() => {
     fetchProduct();
   }, [id]);
+
+  useEffect(() => {
+    if (socket && id) {
+      socket.on('newReview', (data) => {
+        if (data.productId === id) {
+          fetchProduct(); // Refresh product to show new review
+        }
+      });
+
+      return () => {
+        socket.off('newReview');
+      };
+    }
+  }, [socket, id]);
 
   const fetchProduct = async () => {
     try {

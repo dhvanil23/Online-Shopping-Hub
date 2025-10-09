@@ -29,22 +29,8 @@ export const SocketProvider = ({ children }) => {
       console.log('WebSocket disconnected');
     });
 
-    // Listen for real-time notifications
-    socketInstance.on('orderCreated', (data) => {
-      toast.success(`Order #${data.orderId.slice(-8)} created successfully!`);
-    });
-
-    socketInstance.on('orderStatusUpdate', (data) => {
-      toast.info(`Order #${data.orderId.slice(-8)} status updated to: ${data.status}`);
-    });
-
-    socketInstance.on('newReview', (data) => {
-      toast.info('New review added to this product!');
-    });
-
-    socketInstance.on('newOrder', (data) => {
-      toast.info(`New order received: $${data.totalAmount}`);
-    });
+    // WebSocket events are now handled by NotificationsContext
+    // Keep connection active for real-time features
 
     setSocket(socketInstance);
 
@@ -61,6 +47,7 @@ export const SocketProvider = ({ children }) => {
 
   const joinUser = (userId) => {
     if (socket) {
+      console.log('WebSocket: Joining user room', userId);
       socket.emit('joinUser', userId);
     }
   };

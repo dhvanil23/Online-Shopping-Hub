@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Navbar, Nav, Container, Badge, Dropdown } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotifications } from '../contexts/NotificationsContext';
 import { cartAPI } from '../services/api';
 
 const AppNavbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { unreadCount } = useNotifications();
   const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
 
@@ -98,6 +100,34 @@ const AppNavbar = () => {
           </Nav>
           
           <Nav className="ms-auto align-items-center">
+            {isAuthenticated && (
+              <Nav.Link 
+                as={Link} 
+                to="/notifications" 
+                className="position-relative me-3 d-flex align-items-center"
+                style={{ 
+                  color: '#495057',
+                  backgroundColor: '#f8f9fa',
+                  borderRadius: '20px',
+                  padding: '8px 16px',
+                  textDecoration: 'none'
+                }}
+              >
+                <span className="me-2">🔔</span>
+                Notifications
+                {unreadCount > 0 && (
+                  <Badge 
+                    bg="danger" 
+                    pill 
+                    className="ms-2"
+                    style={{ fontSize: '0.7rem' }}
+                  >
+                    {unreadCount}
+                  </Badge>
+                )}
+              </Nav.Link>
+            )}
+            
             <Nav.Link 
               as={Link} 
               to="/cart" 
@@ -146,6 +176,14 @@ const AppNavbar = () => {
                   </Dropdown.Item>
                   <Dropdown.Item as={Link} to="/orders" className="py-2">
                     <span className="me-2">📦</span>My Orders
+                  </Dropdown.Item>
+                  <Dropdown.Item as={Link} to="/notifications" className="py-2 position-relative">
+                    <span className="me-2">🔔</span>Notifications
+                    {unreadCount > 0 && (
+                      <Badge bg="danger" pill className="ms-2" style={{ fontSize: '0.6rem' }}>
+                        {unreadCount}
+                      </Badge>
+                    )}
                   </Dropdown.Item>
                   <Dropdown.Divider />
                   <Dropdown.Item onClick={handleLogout} className="py-2 text-danger">

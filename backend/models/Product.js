@@ -108,6 +108,12 @@ class Product {
     const result = await db.query(query, [id, quantity]);
     return result.rowCount > 0;
   }
+
+  static async getTotalCount() {
+    const query = 'SELECT COUNT(*) as total FROM "Products" WHERE "isActive" = true';
+    const result = await db.query(query);
+    return parseInt(result.rows[0].total);
+  }
 }
 
 module.exports = Product;

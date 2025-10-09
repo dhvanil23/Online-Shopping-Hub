@@ -179,11 +179,17 @@ class OrderController {
 
       // Emit real-time status update
       if (req.io) {
+        console.log(`📡 Emitting order status update to user_${existingOrder.userId}:`, {
+          orderId: order.id,
+          status: order.status
+        });
         req.io.to(`user_${existingOrder.userId}`).emit('orderStatusUpdate', {
           orderId: order.id,
           status: order.status,
           updatedAt: order.updatedAt
         });
+      } else {
+        console.log('⚠️ WebSocket not available for order status update');
       }
 
       res.json({ 

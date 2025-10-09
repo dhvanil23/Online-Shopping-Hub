@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Table, Button, Form, Modal, Alert, Tab, Tabs, Badge } from 'react-bootstrap';
 import { productsAPI, ordersAPI } from '../services/api';
+import { useSocket } from '../contexts/SocketContext';
 import { toast } from 'react-toastify';
 
 const AdminPage = () => {
@@ -10,8 +11,10 @@ const AdminPage = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [cursor, setCursor] = useState(null);
   const [hasMore, setHasMore] = useState(true);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [updatingOrderId, setUpdatingOrderId] = useState(null);
   const [productForm, setProductForm] = useState({
     name: '',
     description: '',
@@ -20,11 +23,34 @@ const AdminPage = () => {
     sku: '',
     category: ''
   });
+  const { socket } = useSocket();
 
   useEffect(() => {
     fetchProducts(true);
     fetchOrders();
+    fetchTotalProducts();
   }, []);
+
+  const fetchTotalProducts = async () => {
+    try {
+      const response = await productsAPI.getTotalCount();
+      setTotalProducts(response.data.data.total);
+    } catch (error) {
+      console.error('Error fetching total products:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (socket) {
+      socket.on('newOrder', (data) => {
+        fetchOrders(); // Refresh orders list
+      });
+
+      return () => {
+        socket.off('newOrder');
+      };
+    }
+  }, [socket]);
 
   // Infinite scroll effect
   useEffect(() => {
@@ -147,6 +173,19 @@ const AdminPage = () => {
     }
   };
 
+  const updateOrderStatus = async (orderId, newStatus) => {
+    setUpdatingOrderId(orderId);
+    try {
+      await ordersAPI.updateOrderStatus(orderId, { status: newStatus });
+      toast.success(`Order status updated to ${newStatus}`);
+      fetchOrders();
+    } catch (error) {
+      toast.error('Failed to update order status');
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
   const getOrderStatusBadge = (status) => {
     const variants = {
       pending: 'warning',
@@ -180,7 +219,7 @@ const AdminPage = () => {
         <Col md={3}>
           <Card className="text-center">
             <Card.Body>
-              <h3 className="text-primary">{products.length}</h3>
+              <h3 className="text-primary">{totalProducts}</h3>
               <p className="mb-0">Total Products</p>
             </Card.Body>
           </Card>
@@ -330,16 +369,22 @@ const AdminPage = () => {
                       <td>₹{parseFloat(order.totalAmount || 0).toFixed(2)}</td>
                       <td>{getOrderStatusBadge(order.status)}</td>
                       <td>
-                        <Button
-                          variant="outline-primary"
+                        <Form.Select
                           size="sm"
-                          onClick={() => {
-                            // Handle view order details
-                            console.log('View order:', order.id);
-                          }}
+                          value={order.status}
+                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                          disabled={updatingOrderId === order.id}
+                          style={{ minWidth: '120px' }}
                         >
-                          View
-                        </Button>
+                          <option value="pending">Pending</option>
+                          <option value="confirmed">Confirmed</option>
+                          <option value="shipped">Shipped</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="cancelled">Cancelled</option>
+                        </Form.Select>
+                        {updatingOrderId === order.id && (
+                          <div className="spinner-border spinner-border-sm mt-1" role="status" />
+                        )}
                       </td>
                     </tr>
                   ))}

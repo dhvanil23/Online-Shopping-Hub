@@ -1,17 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge, Table, Alert, Button } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import { ordersAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useSocket } from '../contexts/SocketContext';
+import { toast } from 'react-toastify';
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { user } = useAuth();
+  const { socket, joinUser } = useSocket();
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+    if (user?.id) {
+      joinUser(user.id);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on('orderStatusUpdate', (data) => {
+        setOrders(prev => prev.map(order => 
+          order.id === data.orderId 
+            ? { ...order, status: data.status, updatedAt: data.updatedAt }
+            : order
+        ));
+      });
+
+      return () => {
+        socket.off('orderStatusUpdate');
+      };
+    }
+  }, [socket]);
 
   const fetchOrders = async () => {
     try {
@@ -104,10 +127,17 @@ const OrdersPage = () => {
                           <tbody>
                             {order.items.map((item, index) => (
                               <tr key={index}>
-                                <td>Product #{item.productId?.substring(0, 8) || 'N/A'}</td>
+                                <td>
+                                  <Link 
+                                    to={`/products/${item.productId}`}
+                                    className="text-decoration-none"
+                                  >
+                                    {item.name || `Product #${item.productId?.substring(0, 8)}`}
+                                  </Link>
+                                </td>
                                 <td>{item.quantity}</td>
-                                <td>${parseFloat(item.unitPrice || 0).toFixed(2)}</td>
-                                <td>${parseFloat(item.totalPrice || 0).toFixed(2)}</td>
+                                <td>₹{parseFloat(item.unitPrice || 0).toFixed(2)}</td>
+                                <td>₹{parseFloat((item.unitPrice || 0) * item.quantity).toFixed(2)}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -118,7 +148,7 @@ const OrdersPage = () => {
                     </Col>
                     <Col md={4}>
                       <div className="text-end">
-                        <h5>Total: ${parseFloat(order.totalAmount || 0).toFixed(2)}</h5>
+                        <h5>Total: ₹{parseFloat(order.totalAmount || 0).toFixed(2)}</h5>
                         {order.shippingAddress && (
                           <div className="mt-3">
                             <h6>Shipping Address:</h6>

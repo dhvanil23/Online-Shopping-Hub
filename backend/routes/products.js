@@ -9,6 +9,8 @@ const router = express.Router();
 
 router.get('/', cache(300), productValidation.getProducts, handleValidation, ProductController.getProducts);
 
+router.get('/count', cache(600), ProductController.getTotalCount);
+
 router.get('/featured', cache(600), ProductController.getFeaturedProducts);
 
 router.get('/:id', cache(300), commonValidation.idParam, handleValidation, ProductController.getProduct);

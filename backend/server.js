@@ -148,18 +148,20 @@ const startServer = async () => {
 
   // WebSocket connection handling
   io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
+    console.log('✅ WebSocket user connected:', socket.id);
     
     socket.on('joinProduct', (productId) => {
+      console.log(`📦 User ${socket.id} joined product room: product_${productId}`);
       socket.join(`product_${productId}`);
     });
     
     socket.on('joinUser', (userId) => {
+      console.log(`👤 User ${socket.id} joined user room: user_${userId}`);
       socket.join(`user_${userId}`);
     });
     
     socket.on('disconnect', () => {
-      console.log('User disconnected:', socket.id);
+      console.log('❌ WebSocket user disconnected:', socket.id);
     });
   });
 

@@ -53,6 +53,7 @@ export const productsAPI = {
   updateProduct: (id, productData) => api.put(`/products/${id}`, productData),
   deleteProduct: (id) => api.delete(`/products/${id}`),
   getFeatured: () => api.get('/products', { params: { limit: 6 } }),
+  getTotalCount: () => api.get('/products/count'),
 };
 
 // Orders API
@@ -60,6 +61,7 @@ export const ordersAPI = {
   createOrder: (orderData) => api.post('/orders', orderData),
   getOrders: (params) => api.get('/orders', { params }),
   getOrder: (id) => api.get(`/orders/${id}`),
+  updateOrderStatus: (id, statusData) => api.put(`/orders/${id}/status`, statusData),
   cancelOrder: (id) => api.post(`/orders/${id}/cancel`),
 };
 
