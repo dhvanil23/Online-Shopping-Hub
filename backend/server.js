@@ -139,7 +139,9 @@ const startServer = async () => {
   // Setup WebSocket
   const io = new Server(server, {
     cors: {
-      origin: process.env.FRONTEND_URL || "http://localhost:3001",
+      origin: process.env.NODE_ENV === 'production' 
+        ? "https://eshopping-hub.netlify.app" 
+        : "http://localhost:3001",
       methods: ["GET", "POST"]
     }
   });

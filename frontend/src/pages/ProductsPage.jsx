@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Form, Pagination, Alert, InputGroup } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Form, Pagination, Alert, InputGroup, Badge } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { productsAPI, cartAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -55,11 +55,17 @@ const ProductsPage = () => {
         limit: 20,
         search: searchTerm,
         category: selectedCategory,
-        minPrice: priceRange.min,
-        maxPrice: priceRange.max,
         sortBy,
         sortOrder
       };
+      
+      // Only add price filters if they have values
+      if (priceRange.min && priceRange.min !== '') {
+        params.minPrice = priceRange.min;
+      }
+      if (priceRange.max && priceRange.max !== '') {
+        params.maxPrice = priceRange.max;
+      }
 
       const response = await productsAPI.getProducts(params);
       const data = response.data.data;
