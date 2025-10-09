@@ -63,6 +63,14 @@ export const ordersAPI = {
   cancelOrder: (id) => api.post(`/orders/${id}/cancel`),
 };
 
+// Reviews API
+export const reviewsAPI = {
+  getProductReviews: (productId) => api.get(`/reviews/product/${productId}`),
+  createReview: (reviewData) => api.post('/reviews', reviewData),
+  updateReview: (id, reviewData) => api.put(`/reviews/${id}`, reviewData),
+  deleteReview: (id) => api.delete(`/reviews/${id}`),
+};
+
 // Cart API (local storage based)
 export const cartAPI = {
   getCart: () => {

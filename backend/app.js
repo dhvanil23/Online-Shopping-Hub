@@ -105,6 +105,19 @@ app.use((req, res, next) => {
   next();
 });
 
+// Test endpoint
+app.get('/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'API is working',
+    features: {
+      lazyLoading: 'GET /api/v1/products?cursor=value&limit=20',
+      reviews: 'GET /api/v1/reviews/product/:productId',
+      websocket: 'Connect to socket.io for real-time updates'
+    }
+  });
+});
+
 // Health check
 app.get('/health', async (req, res) => {
   const health = {

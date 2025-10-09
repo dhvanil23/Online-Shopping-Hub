@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const Review = require('../models/Review');
 const redis = require('../config/redis');
 
 class ProductController {
@@ -49,7 +50,11 @@ class ProductController {
     try {
       const { id } = req.params;
       
-      const product = await Product.findById(id);
+      const [product, reviews, stats] = await Promise.all([
+        Product.findById(id),
+        Review.findByProduct(id),
+        Review.getProductStats(id)
+      ]);
       
       if (!product) {
         return res.status(404).json({ 
@@ -60,7 +65,21 @@ class ProductController {
 
       res.json({ 
         success: true, 
-        data: product,
+        data: {
+          ...product,
+          reviews,
+          reviewStats: {
+            totalReviews: parseInt(stats.totalReviews),
+            averageRating: parseFloat(stats.averageRating) || 0,
+            distribution: {
+              5: parseInt(stats.fiveStars),
+              4: parseInt(stats.fourStars),
+              3: parseInt(stats.threeStars),
+              2: parseInt(stats.twoStars),
+              1: parseInt(stats.oneStar)
+            }
+          }
+        },
         message: 'Product retrieved successfully'
       });
     } catch (error) {
@@ -94,9 +113,9 @@ class ProductController {
 
       // Invalidate product cache
       if (redis.isConnected()) {
-        const keys = await redis.keys('products:*');
+        const keys = await redis.getClient().keys('products:*');
         if (keys.length > 0) {
-          await redis.del(...keys);
+          await redis.getClient().del(keys);
         }
       }
 
@@ -144,9 +163,9 @@ class ProductController {
 
       // Invalidate product cache
       if (redis.isConnected()) {
-        const keys = await redis.keys('products:*');
+        const keys = await redis.getClient().keys('products:*');
         if (keys.length > 0) {
-          await redis.del(...keys);
+          await redis.getClient().del(keys);
         }
       }
 
@@ -187,9 +206,9 @@ class ProductController {
 
       // Invalidate product cache
       if (redis.isConnected()) {
-        const keys = await redis.keys('products:*');
+        const keys = await redis.getClient().keys('products:*');
         if (keys.length > 0) {
-          await redis.del(...keys);
+          await redis.getClient().del(keys);
         }
       }
 

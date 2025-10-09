@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Badge, Spinner, Alert } from 'react-bootstrap';
 import { productsAPI, cartAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useSocket } from '../contexts/SocketContext';
 import { toast } from 'react-toastify';
 
 const ProductDetailPage = () => {
@@ -12,6 +13,7 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { isAuthenticated } = useAuth();
+  const { joinProduct } = useSocket();
 
   useEffect(() => {
     fetchProduct();
@@ -22,6 +24,9 @@ const ProductDetailPage = () => {
       setLoading(true);
       const response = await productsAPI.getProduct(id);
       setProduct(response.data.data);
+      
+      // Join product room for real-time updates
+      joinProduct(id);
     } catch (error) {
       setError('Product not found');
       console.error('Error fetching product:', error);
@@ -97,7 +102,18 @@ const ProductDetailPage = () => {
               )}
             </div>
 
-            <h2 className="text-primary mb-4">${parseFloat(product.price).toFixed(2)}</h2>
+            <div className="d-flex align-items-center mb-3">
+              <h2 className="text-primary mb-0 me-3">${parseFloat(product.price).toFixed(2)}</h2>
+              {product.reviewStats && product.reviewStats.totalReviews > 0 && (
+                <div className="d-flex align-items-center">
+                  <div className="text-warning me-2">
+                    {'★'.repeat(Math.floor(product.reviewStats.averageRating))}
+                    {'☆'.repeat(5 - Math.floor(product.reviewStats.averageRating))}
+                  </div>
+                  <span className="text-muted">({product.reviewStats.averageRating.toFixed(1)}) {product.reviewStats.totalReviews} reviews</span>
+                </div>
+              )}
+            </div>
 
             <div className="mb-4">
               <h5>Description</h5>
@@ -132,6 +148,50 @@ const ProductDetailPage = () => {
           </div>
         </Col>
       </Row>
+      
+      {/* Reviews Section */}
+      {product.reviews && product.reviews.length > 0 && (
+        <Row className="mt-5">
+          <Col>
+            <Card>
+              <Card.Header>
+                <h4>Customer Reviews</h4>
+                {product.reviewStats && (
+                  <div className="d-flex align-items-center mt-2">
+                    <div className="text-warning me-3">
+                      {'★'.repeat(Math.floor(product.reviewStats.averageRating))}
+                      {'☆'.repeat(5 - Math.floor(product.reviewStats.averageRating))}
+                      <span className="ms-2 text-dark">{product.reviewStats.averageRating.toFixed(1)} out of 5</span>
+                    </div>
+                    <small className="text-muted">Based on {product.reviewStats.totalReviews} reviews</small>
+                  </div>
+                )}
+              </Card.Header>
+              <Card.Body>
+                {product.reviews.map((review, index) => (
+                  <div key={index} className={`py-3 ${index < product.reviews.length - 1 ? 'border-bottom' : ''}`}>
+                    <div className="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <strong>{review.userName}</strong>
+                        <div className="text-warning">
+                          {'★'.repeat(review.rating)}
+                          {'☆'.repeat(5 - review.rating)}
+                        </div>
+                      </div>
+                      <small className="text-muted">
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </small>
+                    </div>
+                    {review.comment && (
+                      <p className="text-muted mb-0">{review.comment}</p>
+                    )}
+                  </div>
+                ))}
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      )}
     </Container>
   );
 };

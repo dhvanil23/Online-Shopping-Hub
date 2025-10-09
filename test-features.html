@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>E-commerce Features Test</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>E-commerce Features Test</h1>
+    
+    <div>
+        <h2>1. Test Lazy Loading</h2>
+        <button onclick="testLazyLoading()">Load Products (Lazy Loading)</button>
+        <div id="products"></div>
+    </div>
+    
+    <div>
+        <h2>2. Test Product with Reviews</h2>
+        <button onclick="testProductReviews()">Get Product with Reviews</button>
+        <div id="product-details"></div>
+    </div>
+    
+    <div>
+        <h2>3. Test WebSocket</h2>
+        <button onclick="testWebSocket()">Connect WebSocket</button>
+        <div id="websocket-status"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api/v1';
+        let socket;
+
+        async function testLazyLoading() {
+            try {
+                const response = await fetch(`${API_BASE}/products?limit=5`);
+                const data = await response.json();
+                
+                document.getElementById('products').innerHTML = `
+                    <h3>Products (Lazy Loading):</h3>
+                    <p>Has More: ${data.data.hasMore}</p>
+                    <p>Next Cursor: ${data.data.nextCursor}</p>
+                    <p>Count: ${data.data.count}</p>
+                    <ul>
+                        ${data.data.products.map(p => `<li>${p.name} - $${p.price}</li>`).join('')}
+                    </ul>
+                `;
+            } catch (error) {
+                document.getElementById('products').innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        async function testProductReviews() {
+            try {
+                // First get a product
+                const productsResponse = await fetch(`${API_BASE}/products?limit=1`);
+                const productsData = await productsResponse.json();
+                
+                if (productsData.data.products.length > 0) {
+                    const productId = productsData.data.products[0].id;
+                    const productResponse = await fetch(`${API_BASE}/products/${productId}`);
+                    const productData = await productResponse.json();
+                    
+                    document.getElementById('product-details').innerHTML = `
+                        <h3>Product Details:</h3>
+                        <p>Name: ${productData.data.name}</p>
+                        <p>Price: $${productData.data.price}</p>
+                        <p>Average Rating: ${productData.data.reviewStats.averageRating}</p>
+                        <p>Total Reviews: ${productData.data.reviewStats.totalReviews}</p>
+                        <h4>Reviews:</h4>
+                        <ul>
+                            ${productData.data.reviews.map(r => `
+                                <li>${r.userName}: ${r.rating}/5 - ${r.comment || 'No comment'}</li>
+                            `).join('')}
+                        </ul>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('product-details').innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        function testWebSocket() {
+            socket = io('http://localhost:3000');
+            
+            socket.on('connect', () => {
+                document.getElementById('websocket-status').innerHTML = `
+                    <p>✅ WebSocket Connected: ${socket.id}</p>
+                `;
+            });
+            
+            socket.on('newReview', (data) => {
+                document.getElementById('websocket-status').innerHTML += `
+                    <p>🔔 New Review: Product ${data.productId}</p>
+                `;
+            });
+            
+            socket.on('orderCreated', (data) => {
+                document.getElementById('websocket-status').innerHTML += `
+                    <p>🔔 Order Created: ${data.orderId}</p>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>

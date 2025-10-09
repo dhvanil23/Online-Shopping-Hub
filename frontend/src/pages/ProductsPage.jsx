@@ -9,8 +9,9 @@ const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [cursor, setCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
@@ -18,15 +19,23 @@ const ProductsPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchProducts();
-  }, [currentPage, searchTerm, sortBy, sortOrder]);
+    setProducts([]);
+    setCursor(null);
+    setHasMore(true);
+    fetchProducts(true);
+  }, [searchTerm, sortBy, sortOrder]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (reset = false) => {
     try {
-      setLoading(true);
+      if (reset) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+      
       const params = {
-        page: currentPage,
-        limit: 24,
+        cursor: reset ? null : cursor,
+        limit: 20,
         search: searchTerm,
         sortBy,
         sortOrder
@@ -35,14 +44,26 @@ const ProductsPage = () => {
       const response = await productsAPI.getProducts(params);
       const data = response.data.data;
       
-
-      setProducts(data?.products || []);
-      setTotalPages(data?.pagination?.totalPages || 1);
+      if (reset) {
+        setProducts(data?.products || []);
+      } else {
+        setProducts(prev => [...prev, ...(data?.products || [])]);
+      }
+      
+      setCursor(data?.nextCursor);
+      setHasMore(data?.hasMore || false);
     } catch (error) {
       setError('Failed to load products');
       console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMore = () => {
+    if (hasMore && !loadingMore) {
+      fetchProducts(false);
     }
   };
 
@@ -63,12 +84,10 @@ const ProductsPage = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setCurrentPage(1);
-    fetchProducts();
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+    setProducts([]);
+    setCursor(null);
+    setHasMore(true);
+    fetchProducts(true);
   };
 
   const handleSortChange = (field) => {
@@ -78,7 +97,6 @@ const ProductsPage = () => {
       setSortBy(field);
       setSortOrder('asc');
     }
-    setCurrentPage(1);
   };
 
   return (
@@ -292,45 +310,31 @@ const ProductsPage = () => {
                 ))}
               </Row>
 
-              {/* Pagination */}
-              {totalPages > 1 && (
+              {/* Load More Button */}
+              {hasMore && (
                 <Row className="mt-4">
                   <Col className="d-flex justify-content-center">
-                    <Pagination>
-                      <Pagination.First
-                        onClick={() => handlePageChange(1)}
-                        disabled={currentPage === 1}
-                      />
-                      <Pagination.Prev
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      />
-                      
-                      {[...Array(Math.min(5, totalPages))].map((_, index) => {
-                        const page = Math.max(1, currentPage - 2) + index;
-                        if (page <= totalPages) {
-                          return (
-                            <Pagination.Item
-                              key={page}
-                              active={page === currentPage}
-                              onClick={() => handlePageChange(page)}
-                            >
-                              {page}
-                            </Pagination.Item>
-                          );
-                        }
-                        return null;
-                      })}
-                      
-                      <Pagination.Next
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      />
-                      <Pagination.Last
-                        onClick={() => handlePageChange(totalPages)}
-                        disabled={currentPage === totalPages}
-                      />
-                    </Pagination>
+                    <Button
+                      variant="outline-primary"
+                      size="lg"
+                      onClick={loadMore}
+                      disabled={loadingMore}
+                      style={{
+                        borderRadius: '25px',
+                        paddingLeft: '3rem',
+                        paddingRight: '3rem',
+                        fontWeight: '500'
+                      }}
+                    >
+                      {loadingMore ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-2" />
+                          Loading...
+                        </>
+                      ) : (
+                        'Load More Products'
+                      )}
+                    </Button>
                   </Col>
                 </Row>
               )}
@@ -358,7 +362,9 @@ const ProductsPage = () => {
                   variant="primary" 
                   onClick={() => {
                     setSearchTerm('');
-                    setCurrentPage(1);
+                    setProducts([]);
+                    setCursor(null);
+                    setHasMore(true);
                   }}
                   style={{
                     borderRadius: '25px',
