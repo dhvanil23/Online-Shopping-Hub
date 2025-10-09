@@ -25,6 +25,20 @@ const ProductsPage = () => {
     fetchProducts(true);
   }, [searchTerm, sortBy, sortOrder]);
 
+  // Infinite scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 1000) {
+        if (hasMore && !loading && !loadingMore) {
+          loadMore();
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasMore, loading, loadingMore, cursor]);
+
   const fetchProducts = async (reset = false) => {
     try {
       if (reset) {
@@ -310,31 +324,22 @@ const ProductsPage = () => {
                 ))}
               </Row>
 
-              {/* Load More Button */}
-              {hasMore && (
+              {/* Loading indicator for infinite scroll */}
+              {loadingMore && (
                 <Row className="mt-4">
-                  <Col className="d-flex justify-content-center">
-                    <Button
-                      variant="outline-primary"
-                      size="lg"
-                      onClick={loadMore}
-                      disabled={loadingMore}
-                      style={{
-                        borderRadius: '25px',
-                        paddingLeft: '3rem',
-                        paddingRight: '3rem',
-                        fontWeight: '500'
-                      }}
-                    >
-                      {loadingMore ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2" />
-                          Loading...
-                        </>
-                      ) : (
-                        'Load More Products'
-                      )}
-                    </Button>
+                  <Col className="text-center">
+                    <div className="spinner-border text-primary" role="status">
+                      <span className="visually-hidden">Loading more products...</span>
+                    </div>
+                    <p className="text-muted mt-2">Loading more products...</p>
+                  </Col>
+                </Row>
+              )}
+              
+              {!hasMore && products.length > 0 && (
+                <Row className="mt-4">
+                  <Col className="text-center">
+                    <p className="text-muted">You've reached the end of our product catalog!</p>
                   </Col>
                 </Row>
               )}
