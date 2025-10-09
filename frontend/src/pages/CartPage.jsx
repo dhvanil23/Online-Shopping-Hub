@@ -118,7 +118,7 @@ const CartPage = () => {
                         </div>
                       </td>
                       <td>
-                        <strong>${parseFloat(item.price).toFixed(2)}</strong>
+                        <strong>₹{parseFloat(item.price).toFixed(2)}</strong>
                       </td>
                       <td>
                         <div className="d-flex align-items-center" style={{ width: '120px' }}>
@@ -147,7 +147,7 @@ const CartPage = () => {
                         </div>
                       </td>
                       <td>
-                        <strong>${(item.price * item.quantity).toFixed(2)}</strong>
+                        <strong>₹{(item.price * item.quantity).toFixed(2)}</strong>
                       </td>
                       <td>
                         <Button
@@ -174,20 +174,20 @@ const CartPage = () => {
             <Card.Body>
               <div className="d-flex justify-content-between mb-2">
                 <span>Subtotal ({cart.items.reduce((sum, item) => sum + item.quantity, 0)} items):</span>
-                <span>${cart.total.toFixed(2)}</span>
+                <span>₹{cart.total.toFixed(2)}</span>
               </div>
               <div className="d-flex justify-content-between mb-2">
                 <span>Shipping:</span>
                 <span>Free</span>
               </div>
               <div className="d-flex justify-content-between mb-2">
-                <span>Tax:</span>
-                <span>${(cart.total * 0.08).toFixed(2)}</span>
+                <span>GST (18%):</span>
+                <span>₹{(cart.total * 0.18).toFixed(2)}</span>
               </div>
               <hr />
               <div className="d-flex justify-content-between mb-3">
                 <strong>Total:</strong>
-                <strong>${(cart.total * 1.08).toFixed(2)}</strong>
+                <strong>₹{(cart.total * 1.18).toFixed(2)}</strong>
               </div>
 
               <div className="d-grid gap-2">

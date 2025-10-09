@@ -157,7 +157,7 @@ const ProductDetailPage = () => {
             </div>
 
             <div className="mb-3">
-              <h2 className="text-primary mb-2">${parseFloat(product.price).toFixed(2)}</h2>
+              <h2 className="text-primary mb-2">₹{parseFloat(product.price).toFixed(2)}</h2>
               {product.reviewStats && product.reviewStats.totalReviews > 0 ? (
                 <div className="d-flex align-items-center mb-2">
                   {renderStars(Math.round(product.reviewStats.averageRating))}

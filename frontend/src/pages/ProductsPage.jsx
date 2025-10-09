@@ -283,7 +283,7 @@ const ProductsPage = () => {
                                 fontSize: '1.3rem'
                               }}
                             >
-                              ${parseFloat(product.price).toFixed(2)}
+                              ₹{parseFloat(product.price).toFixed(2)}
                             </h5>
                           </div>
                           <div className="d-flex gap-2">

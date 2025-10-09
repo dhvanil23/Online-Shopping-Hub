@@ -18,7 +18,7 @@ const CheckoutPage = () => {
     city: '',
     state: '',
     zipCode: '',
-    country: 'United States'
+    country: 'India'
   });
 
   const { user } = useAuth();
@@ -73,7 +73,7 @@ const CheckoutPage = () => {
           zipCode: formData.zipCode,
           country: formData.country
         },
-        totalAmount: cart.total * 1.08 // Including tax
+        totalAmount: cart.total * 1.18 // Including GST
       };
 
       const response = await ordersAPI.createOrder(orderData);
@@ -96,8 +96,8 @@ const CheckoutPage = () => {
   };
 
   const subtotal = cart.total;
-  const tax = subtotal * 0.08;
-  const total = subtotal + tax;
+  const gst = subtotal * 0.18;
+  const total = subtotal + gst;
 
   return (
     <Container className="my-4">
@@ -233,9 +233,7 @@ const CheckoutPage = () => {
                     onChange={handleChange}
                     required
                   >
-                    <option value="United States">United States</option>
-                    <option value="Canada">Canada</option>
-                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="India">India</option>
                   </Form.Select>
                 </Form.Group>
 
@@ -252,7 +250,7 @@ const CheckoutPage = () => {
                         Processing Order...
                       </>
                     ) : (
-                      `Place Order - $${total.toFixed(2)}`
+                      `Place Order - ₹${total.toFixed(2)}`
                     )}
                   </Button>
                 </div>
@@ -275,7 +273,7 @@ const CheckoutPage = () => {
                         <h6 className="mb-0">{item.name}</h6>
                         <small className="text-muted">Qty: {item.quantity}</small>
                       </div>
-                      <span>${(item.price * item.quantity).toFixed(2)}</span>
+                      <span>₹{(item.price * item.quantity).toFixed(2)}</span>
                     </div>
                   </ListGroup.Item>
                 ))}
@@ -285,20 +283,20 @@ const CheckoutPage = () => {
 
               <div className="d-flex justify-content-between mb-2">
                 <span>Subtotal:</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>₹{subtotal.toFixed(2)}</span>
               </div>
               <div className="d-flex justify-content-between mb-2">
                 <span>Shipping:</span>
                 <span>Free</span>
               </div>
               <div className="d-flex justify-content-between mb-2">
-                <span>Tax:</span>
-                <span>${tax.toFixed(2)}</span>
+                <span>GST (18%):</span>
+                <span>₹{gst.toFixed(2)}</span>
               </div>
               <hr />
               <div className="d-flex justify-content-between">
                 <strong>Total:</strong>
-                <strong>${total.toFixed(2)}</strong>
+                <strong>₹{total.toFixed(2)}</strong>
               </div>
             </Card.Body>
           </Card>

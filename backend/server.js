@@ -110,7 +110,7 @@ const initializeDatabase = async () => {
           values.push(
             `Product ${productId} - ${brands[Math.floor(Math.random() * brands.length)]}`,
             `High-quality product with premium features. Perfect for everyday use. Product ID: ${productId}`,
-            Math.floor(Math.random() * 500) + 10,
+            Math.floor(Math.random() * 50000) + 199,
             categories[Math.floor(Math.random() * categories.length)],
             Math.floor(Math.random() * 200) + 5,
             `https://picsum.photos/300/200?random=${productId}`
