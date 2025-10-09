@@ -3,6 +3,8 @@ const app = require('./app');
 const db = require('./config/database');
 const redis = require('./config/redis');
 const bcrypt = require('bcryptjs');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
 
 const PORT = process.env.PORT || 3000;
 
@@ -54,6 +56,17 @@ const initializeDatabase = async () => {
           "shippingAddress" JSONB,
           "createdAt" TIMESTAMP DEFAULT NOW(),
           "updatedAt" TIMESTAMP DEFAULT NOW()
+      );
+      
+      CREATE TABLE IF NOT EXISTS "Reviews" (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          "userId" UUID NOT NULL REFERENCES "Users"(id),
+          "productId" UUID NOT NULL REFERENCES "Products"(id),
+          rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+          comment TEXT,
+          "createdAt" TIMESTAMP DEFAULT NOW(),
+          "updatedAt" TIMESTAMP DEFAULT NOW(),
+          UNIQUE("userId", "productId")
       );
     `);
     console.log('✅ Database tables created');
@@ -121,14 +134,47 @@ const initializeDatabase = async () => {
 const startServer = async () => {
   await initializeDatabase();
   
-  const server = app.listen(PORT, () => {
+  const server = createServer(app);
+  
+  // Setup WebSocket
+  const io = new Server(server, {
+    cors: {
+      origin: process.env.FRONTEND_URL || "http://localhost:3001",
+      methods: ["GET", "POST"]
+    }
+  });
+
+  // WebSocket connection handling
+  io.on('connection', (socket) => {
+    console.log('User connected:', socket.id);
+    
+    socket.on('joinProduct', (productId) => {
+      socket.join(`product_${productId}`);
+    });
+    
+    socket.on('joinUser', (userId) => {
+      socket.join(`user_${userId}`);
+    });
+    
+    socket.on('disconnect', () => {
+      console.log('User disconnected:', socket.id);
+    });
+  });
+
+  // Make io available to routes
+  app.set('io', io);
+  
+  server.listen(PORT, () => {
     console.log(`✅ E-Commerce API Server running on port ${PORT}`);
     console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`📊 Health check: http://localhost:${PORT}/health`);
+    console.log(`🔌 WebSocket server running`);
     console.log('📊 Demo credentials:');
     console.log('  • Customer: customer@demo.com / password123');
     console.log('  • Admin: admin@demo.com / password123');
   });
+
+  return server;
 
   // Handle server errors
   server.on('error', (error) => {
@@ -140,6 +186,8 @@ const startServer = async () => {
       process.exit(1);
     }
   });
+
+  return server;
 };
 
 // Handle uncaught exceptions

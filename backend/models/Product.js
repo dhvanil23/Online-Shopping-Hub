@@ -1,11 +1,8 @@
 const db = require('../config/database');
 
 class Product {
-  static async findAll({ page = 1, limit = 20, search = '', category = '', sortBy = 'name', sortOrder = 'asc' }) {
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-    
+  static async findAll({ cursor = null, limit = 20, search = '', category = '', sortBy = 'createdAt', sortOrder = 'desc' }) {
     let query = 'SELECT * FROM "Products" WHERE "isActive" = true';
-    let countQuery = 'SELECT COUNT(*) FROM "Products" WHERE "isActive" = true';
     let params = [];
     let paramCount = 0;
     
@@ -13,7 +10,6 @@ class Product {
     if (search) {
       paramCount++;
       query += ` AND (name ILIKE $${paramCount} OR description ILIKE $${paramCount})`;
-      countQuery += ` AND (name ILIKE $${paramCount} OR description ILIKE $${paramCount})`;
       params.push(`%${search}%`);
     }
     
@@ -21,34 +17,42 @@ class Product {
     if (category) {
       paramCount++;
       query += ` AND category ILIKE $${paramCount}`;
-      countQuery += ` AND category ILIKE $${paramCount}`;
       params.push(`%${category}%`);
     }
     
-    // Sorting
+    // Cursor-based pagination
     const validSortFields = ['name', 'price', 'createdAt', 'category'];
-    const sortField = validSortFields.includes(sortBy) ? sortBy : 'name';
+    const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
     const order = sortOrder.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+    const operator = order === 'DESC' ? '<' : '>';
     
-    query += ` ORDER BY "${sortField}" ${order} LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
-    params.push(parseInt(limit), offset);
+    if (cursor) {
+      paramCount++;
+      query += ` AND "${sortField}" ${operator} $${paramCount}`;
+      params.push(cursor);
+    }
+    
+    // Get one extra item to check if there are more
+    query += ` ORDER BY "${sortField}" ${order} LIMIT $${paramCount + 1}`;
+    params.push(parseInt(limit) + 1);
 
-    const [result, countResult] = await Promise.all([
-      db.query(query, params),
-      db.query(countQuery, params.slice(0, paramCount))
-    ]);
+    const result = await db.query(query, params);
+    const products = result.rows;
     
-    const totalItems = parseInt(countResult.rows[0].count);
-    const totalPages = Math.ceil(totalItems / parseInt(limit));
+    // Check if there are more items
+    const hasMore = products.length > parseInt(limit);
+    if (hasMore) {
+      products.pop(); // Remove the extra item
+    }
+    
+    // Get next cursor
+    const nextCursor = products.length > 0 ? products[products.length - 1][sortField] : null;
 
     return {
-      products: result.rows,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages,
-        totalItems,
-        itemsPerPage: parseInt(limit)
-      }
+      products,
+      hasMore,
+      nextCursor,
+      count: products.length
     };
   }
 

@@ -91,10 +91,10 @@ const productValidation = {
   ],
 
   getProducts: [
-    query('page')
+    query('cursor')
       .optional()
-      .isInt({ min: 1 })
-      .withMessage('Page must be a positive integer'),
+      .isString()
+      .withMessage('Cursor must be a string'),
     query('limit')
       .optional()
       .isInt({ min: 1, max: 100 })

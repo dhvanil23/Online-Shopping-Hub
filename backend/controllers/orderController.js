@@ -45,6 +45,22 @@ class OrderController {
         }
       }
 
+      // Emit real-time notification
+      if (req.io) {
+        req.io.to(`user_${userId}`).emit('orderCreated', {
+          orderId: order.id,
+          status: order.status,
+          totalAmount: order.totalAmount
+        });
+        
+        // Notify admins
+        req.io.emit('newOrder', {
+          orderId: order.id,
+          userId,
+          totalAmount: order.totalAmount
+        });
+      }
+
       res.status(201).json({ 
         success: true, 
         data: order,
@@ -143,12 +159,30 @@ class OrderController {
       const { id } = req.params;
       const { status } = req.body;
 
+      // Get order first to get userId
+      const existingOrder = await Order.findById(id);
+      if (!existingOrder) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Order not found' 
+        });
+      }
+
       const order = await Order.updateStatus(id, status);
       
       if (!order) {
         return res.status(404).json({ 
           success: false, 
           error: 'Order not found' 
+        });
+      }
+
+      // Emit real-time status update
+      if (req.io) {
+        req.io.to(`user_${existingOrder.userId}`).emit('orderStatusUpdate', {
+          orderId: order.id,
+          status: order.status,
+          updatedAt: order.updatedAt
         });
       }
 

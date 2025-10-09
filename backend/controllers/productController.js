@@ -4,11 +4,11 @@ const redis = require('../config/redis');
 class ProductController {
   static async getProducts(req, res) {
     try {
-      const { page, limit, search, category, sortBy, sortOrder } = req.query;
+      const { cursor, limit, search, category, sortBy, sortOrder } = req.query;
       const cacheKey = `products:${JSON.stringify(req.query)}`;
       
-      // Try cache first
-      if (redis.isConnected()) {
+      // Try cache first (only for first load without cursor)
+      if (!cursor && redis.isConnected()) {
         const cached = await redis.get(cacheKey);
         if (cached) {
           return res.json(JSON.parse(cached));
@@ -16,7 +16,7 @@ class ProductController {
       }
       
       const result = await Product.findAll({
-        page,
+        cursor,
         limit,
         search,
         category,
@@ -30,8 +30,8 @@ class ProductController {
         message: 'Products retrieved successfully'
       };
 
-      // Cache result
-      if (redis.isConnected()) {
+      // Cache result (only for first load)
+      if (!cursor && redis.isConnected()) {
         await redis.set(cacheKey, response, 300);
       }
 

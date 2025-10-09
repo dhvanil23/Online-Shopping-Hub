@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
 const cartRoutes = require('./routes/cart');
+const reviewRoutes = require('./routes/reviews');
 
 const db = require('./config/database');
 const redis = require('./config/redis');
@@ -98,6 +99,12 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('combined'));
 }
 
+// WebSocket middleware
+app.use((req, res, next) => {
+  req.io = req.app.get('io');
+  next();
+});
+
 // Health check
 app.get('/health', async (req, res) => {
   const health = {
@@ -124,6 +131,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/cart', cartRoutes);
+app.use('/api/v1/reviews', reviewRoutes);
 
 app.use('*', (req, res) => {
   res.status(404).json({
