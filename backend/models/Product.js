@@ -1,7 +1,7 @@
 const db = require('../config/database');
 
 class Product {
-  static async findAll({ cursor = null, limit = 20, search = '', category = '', sortBy = 'createdAt', sortOrder = 'desc' }) {
+  static async findAll({ cursor = null, limit = 20, search = '', category = '', minPrice = '', maxPrice = '', sortBy = 'createdAt', sortOrder = 'desc' }) {
     let query = 'SELECT * FROM "Products" WHERE "isActive" = true';
     let params = [];
     let paramCount = 0;
@@ -18,6 +18,19 @@ class Product {
       paramCount++;
       query += ` AND category ILIKE $${paramCount}`;
       params.push(`%${category}%`);
+    }
+    
+    // Price range filters
+    if (minPrice) {
+      paramCount++;
+      query += ` AND price >= $${paramCount}`;
+      params.push(parseFloat(minPrice));
+    }
+    
+    if (maxPrice) {
+      paramCount++;
+      query += ` AND price <= $${paramCount}`;
+      params.push(parseFloat(maxPrice));
     }
     
     // Cursor-based pagination

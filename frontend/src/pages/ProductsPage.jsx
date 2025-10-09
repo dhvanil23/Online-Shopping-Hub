@@ -15,6 +15,9 @@ const ProductsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [showFilters, setShowFilters] = useState(false);
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -23,7 +26,7 @@ const ProductsPage = () => {
     setCursor(null);
     setHasMore(true);
     fetchProducts(true);
-  }, [searchTerm, sortBy, sortOrder]);
+  }, [searchTerm, sortBy, sortOrder, selectedCategory, priceRange]);
 
   // Infinite scroll effect
   useEffect(() => {
@@ -51,6 +54,9 @@ const ProductsPage = () => {
         cursor: reset ? null : cursor,
         limit: 20,
         search: searchTerm,
+        category: selectedCategory,
+        minPrice: priceRange.min,
+        maxPrice: priceRange.max,
         sortBy,
         sortOrder
       };
@@ -113,6 +119,16 @@ const ProductsPage = () => {
     }
   };
 
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedCategory('');
+    setPriceRange({ min: '', max: '' });
+    setSortBy('name');
+    setSortOrder('asc');
+  };
+
+  const categories = ['Electronics', 'Clothing', 'Home', 'Sports', 'Books', 'Beauty', 'Automotive', 'Toys'];
+
   return (
     <Container className="my-4">
       <Row className="mb-5">
@@ -133,8 +149,8 @@ const ProductsPage = () => {
       </Row>
 
       {/* Search and Filters */}
-      <Row className="mb-5">
-        <Col md={8}>
+      <Row className="mb-4">
+        <Col md={6}>
           <Form onSubmit={handleSearch}>
             <InputGroup size="lg">
               <Form.Control
@@ -164,7 +180,7 @@ const ProductsPage = () => {
             </InputGroup>
           </Form>
         </Col>
-        <Col md={4}>
+        <Col md={3}>
           <Form.Select
             size="lg"
             value={`${sortBy}-${sortOrder}`}
@@ -172,7 +188,6 @@ const ProductsPage = () => {
               const [field, order] = e.target.value.split('-');
               setSortBy(field);
               setSortOrder(order);
-              setCurrentPage(1);
             }}
             style={{
               borderRadius: '25px',
@@ -188,7 +203,130 @@ const ProductsPage = () => {
             <option value="createdAt-asc">Oldest First</option>
           </Form.Select>
         </Col>
+        <Col md={3}>
+          <Button
+            variant="outline-secondary"
+            size="lg"
+            onClick={() => setShowFilters(!showFilters)}
+            style={{
+              borderRadius: '25px',
+              width: '100%',
+              fontWeight: '500'
+            }}
+          >
+            🔧 Filters {showFilters ? '▲' : '▼'}
+          </Button>
+        </Col>
       </Row>
+
+      {/* Advanced Filters */}
+      {showFilters && (
+        <Row className="mb-4">
+          <Col>
+            <Card className="border-0 shadow-sm">
+              <Card.Body>
+                <Row>
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Category</Form.Label>
+                      <Form.Select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                      >
+                        <option value="">All Categories</option>
+                        {categories.map(category => (
+                          <option key={category} value={category}>{category}</option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Min Price (₹)</Form.Label>
+                      <Form.Control
+                        type="number"
+                        placeholder="Min price"
+                        value={priceRange.min}
+                        onChange={(e) => setPriceRange({...priceRange, min: e.target.value})}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={3}>
+                    <Form.Group>
+                      <Form.Label>Max Price (₹)</Form.Label>
+                      <Form.Control
+                        type="number"
+                        placeholder="Max price"
+                        value={priceRange.max}
+                        onChange={(e) => setPriceRange({...priceRange, max: e.target.value})}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col md={3} className="d-flex align-items-end">
+                    <Button
+                      variant="outline-danger"
+                      onClick={clearFilters}
+                      className="w-100"
+                    >
+                      Clear Filters
+                    </Button>
+                  </Col>
+                </Row>
+                
+                {/* Active Filters Display */}
+                {(selectedCategory || priceRange.min || priceRange.max || searchTerm) && (
+                  <Row className="mt-3">
+                    <Col>
+                      <div className="d-flex flex-wrap gap-2">
+                        <small className="text-muted me-2">Active filters:</small>
+                        {searchTerm && (
+                          <Badge bg="primary" className="d-flex align-items-center">
+                            Search: {searchTerm}
+                            <Button 
+                              variant="link" 
+                              size="sm" 
+                              className="p-0 ms-1 text-white"
+                              onClick={() => setSearchTerm('')}
+                            >
+                              ×
+                            </Button>
+                          </Badge>
+                        )}
+                        {selectedCategory && (
+                          <Badge bg="info" className="d-flex align-items-center">
+                            {selectedCategory}
+                            <Button 
+                              variant="link" 
+                              size="sm" 
+                              className="p-0 ms-1 text-white"
+                              onClick={() => setSelectedCategory('')}
+                            >
+                              ×
+                            </Button>
+                          </Badge>
+                        )}
+                        {(priceRange.min || priceRange.max) && (
+                          <Badge bg="success" className="d-flex align-items-center">
+                            ₹{priceRange.min || '0'} - ₹{priceRange.max || '∞'}
+                            <Button 
+                              variant="link" 
+                              size="sm" 
+                              className="p-0 ms-1 text-white"
+                              onClick={() => setPriceRange({ min: '', max: '' })}
+                            >
+                              ×
+                            </Button>
+                          </Badge>
+                        )}
+                      </div>
+                    </Col>
+                  </Row>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      )}
 
       {error && (
         <Alert variant="danger" className="mb-4">

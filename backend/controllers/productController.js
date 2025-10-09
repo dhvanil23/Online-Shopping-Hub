@@ -5,7 +5,7 @@ const redis = require('../config/redis');
 class ProductController {
   static async getProducts(req, res) {
     try {
-      const { cursor, limit, search, category, sortBy, sortOrder } = req.query;
+      const { cursor, limit, search, category, minPrice, maxPrice, sortBy, sortOrder } = req.query;
       const cacheKey = `products:${JSON.stringify(req.query)}`;
       
       // Try cache first (only for first load without cursor)
@@ -21,6 +21,8 @@ class ProductController {
         limit,
         search,
         category,
+        minPrice,
+        maxPrice,
         sortBy,
         sortOrder
       });

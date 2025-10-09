@@ -106,7 +106,15 @@ const productValidation = {
     query('sortOrder')
       .optional()
       .isIn(['asc', 'desc'])
-      .withMessage('Sort order must be asc or desc')
+      .withMessage('Sort order must be asc or desc'),
+    query('minPrice')
+      .optional()
+      .isFloat({ min: 0 })
+      .withMessage('Min price must be a positive number'),
+    query('maxPrice')
+      .optional()
+      .isFloat({ min: 0 })
+      .withMessage('Max price must be a positive number')
   ]
 };
 
